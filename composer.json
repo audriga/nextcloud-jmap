@@ -1,0 +1,20 @@
+{
+    "name": "audriga/nextcloud-jmap",
+    "description": "JMAP support for Nextcloud",
+    "type": "project",
+    "license": "AGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Stanimir Bozhilov",
+            "email": "stanimir@audriga.com"
+
+        },
+        {
+            "name": "Joris Baum",
+            "email": "joris@audriga.com"
+        }
+    ],
+    "require": {
+        "jeroendesloovere/vcard": "^1.7"
+    }
+}

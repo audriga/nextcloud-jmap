@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>jmap</id>
+    <name>JMAP</name>
+    <summary>A JMAP app for Nextcloud</summary>
+    <description><![CDATA[The JMAP App for Nextcloud provides [JMAP](https://jmap.io/) support for Nextcloud systems by exposing a RESTful-like API Endpoint which speaks the JMAP Protocol. Use it to sync PIM data via a JMAP-compatible client such as OpenXPort or [lttrs-cli](https://github.com/iNPUTmice/lttrs-cli) (coming soon).
+    ]]></description>
+    <version>0.0.1</version>
+    <licence>agpl</licence>
+    <author mail="stanimir@audriga.com">Stanimir Bozhilov</author>
+    <author mail="joris@audriga.com">Joris Baum</author>
+    <namespace>JMAP</namespace>
+    <category>tools</category>
+    <bugs>https://github.com/audriga/nextcloud-jmap/issues</bugs>
+    <dependencies>
+        <nextcloud min-version="15" max-version="15"/>
+    </dependencies>
+    <navigations>
+        <navigation>
+            <name>JMAP</name>
+            <route>jmap.page.index</route>
+        </navigation>
+    </navigations>
+</info>
