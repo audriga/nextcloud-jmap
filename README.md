@@ -1,5 +1,5 @@
 # Nextcloud JMAP
-The JMAP App for Nextcloud provides [JMAP](https://jmap.io/) support for Nextcloud systems by exposing a RESTful-like API Endpoint which speaks the JMAP Protocol. Use it to sync PIM data via a JMAP-compatible client such as OpenXPort or [lttrs-cli](https://github.com/iNPUTmice/lttrs-cli) (coming soon).
+The JMAP App for Nextcloud provides [JMAP](https://jmap.io/) support for Nextcloud systems by exposing a RESTful-like API Endpoint which speaks the JMAP Protocol.
 
 Currently the JMAP App for Nextcloud only offers support for the following:
 
