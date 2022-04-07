@@ -14,12 +14,6 @@
             "email": "joris@audriga.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "artifact",
-            "url": "/tmp/openxport_archives/"
-        }
-    ],
     "require": {
         "audriga/jmap-openxport": "~1"
     },
