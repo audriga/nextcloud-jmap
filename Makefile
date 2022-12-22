@@ -48,16 +48,17 @@ appstore_package_name=$(appstore_build_directory)/$(app_name)
 npm=$(shell which npm 2> /dev/null)
 composer=$(shell which composer 2> /dev/null)
 
-all: build
+all: init
 
+# Initialize project. Run this before any other target.
 # Fetches the PHP and JS dependencies and compiles the JS. If no composer.json
 # is present, the composer step is skipped, if no package.json or js/package.json
 # is present, the npm step is skipped
-.PHONY: build
-build:
-ifneq (,$(wildcard $(CURDIR)/composer.json))
-	make composer
-endif
+.PHONY: init
+init: composer
+	rm $(build_tools_directory)/composer.phar || true
+	ln $(build_tools_directory)/composer_fresh.phar $(build_tools_directory)/composer.phar
+	php $(build_tools_directory)/composer.phar install --prefer-dist --no-dev
 ifneq (,$(wildcard $(CURDIR)/package.json))
 	make npm
 endif
@@ -72,11 +73,8 @@ composer:
 ifeq (, $(composer))
 	@echo "No composer command available, downloading a copy from the web"
 	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | php
-	mv composer.phar $(build_tools_directory)
-	php $(build_tools_directory)/composer.phar install --prefer-dist
-else
-	composer install --prefer-dist
+	./get_composer.sh
+	mv composer.phar $(build_tools_directory)/composer_fresh.phar
 endif
 
 # Installs npm dependencies
