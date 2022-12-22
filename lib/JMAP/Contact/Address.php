@@ -6,7 +6,6 @@ use JsonSerializable;
 
 class Address implements JsonSerializable
 {
-
     private $type;
     private $label;
     private $street;
@@ -16,7 +15,7 @@ class Address implements JsonSerializable
     private $country;
     private $isDefault;
 
-    
+
     public function getType()
     {
         return $this->type;

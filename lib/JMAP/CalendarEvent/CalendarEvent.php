@@ -57,59 +57,73 @@ class CalendarEvent implements JsonSerializable
         $this->duration = $duration;
     }
 
-    public function getStatus() {
+    public function getStatus()
+    {
         return $this->status;
     }
 
-    public function setStatus($status) {
+    public function setStatus($status)
+    {
         $this->status = $status;
     }
 
-    public function getType() {
+    public function getType()
+    {
         return $this->type;
     }
 
-    public function setType($type) {
+    public function setType($type)
+    {
         $this->type = $type;
     }
 
-    public function getUid() {
+    public function getUid()
+    {
         return $this->uid;
     }
 
-    public function setUid($uid) {
+    public function setUid($uid)
+    {
         $this->uid = $uid;
     }
 
-    public function getProdId() {
+    public function getProdId()
+    {
         return $this->prodId;
     }
 
-    public function setProdId($prodId) {
+    public function setProdId($prodId)
+    {
         $this->prodId = $prodId;
     }
 
-    public function getCreated() {
+    public function getCreated()
+    {
         return $this->created;
     }
 
-    public function setCreated($created) {
+    public function setCreated($created)
+    {
         $this->created = $created;
     }
 
-    public function getUpdated() {
+    public function getUpdated()
+    {
         return $this->updated;
     }
 
-    public function setUpdated($updated) {
+    public function setUpdated($updated)
+    {
         $this->updated = $updated;
     }
 
-    public function getSequence() {
+    public function getSequence()
+    {
         return $this->sequence;
     }
 
-    public function setSequence($sequence) {
+    public function setSequence($sequence)
+    {
         $this->sequence = $sequence;
     }
 
@@ -133,59 +147,73 @@ class CalendarEvent implements JsonSerializable
         $this->description = $description;
     }
 
-    public function getLocations() {
+    public function getLocations()
+    {
         return $this->locations;
     }
 
-    public function setLocations($locations) {
+    public function setLocations($locations)
+    {
         $this->locations = $locations;
     }
 
-    public function getKeywords() {
+    public function getKeywords()
+    {
         return $this->keywords;
     }
 
-    public function setKeywords($keywords) {
+    public function setKeywords($keywords)
+    {
         $this->keywords = $keywords;
     }
 
-    public function getRecurrenceRule() {
+    public function getRecurrenceRule()
+    {
         return $this->recurrenceRule;
     }
 
-    public function setRecurrenceRule($recurrenceRule) {
+    public function setRecurrenceRule($recurrenceRule)
+    {
         $this->recurrenceRule = $recurrenceRule;
     }
 
-    public function getRecurrenceOverrides() {
+    public function getRecurrenceOverrides()
+    {
         return $this->recurrenceOverrides;
     }
 
-    public function setRecurrenceOverrides($recurrenceOverrides) {
+    public function setRecurrenceOverrides($recurrenceOverrides)
+    {
         $this->recurrenceOverrides = $recurrenceOverrides;
     }
 
-    public function getPriority() {
+    public function getPriority()
+    {
         return $this->priority;
     }
 
-    public function setPriority($priority) {
+    public function setPriority($priority)
+    {
         $this->priority = $priority;
     }
 
-    public function getPrivacy() {
+    public function getPrivacy()
+    {
         return $this->privacy;
     }
 
-    public function setPrivacy($privacy) {
+    public function setPrivacy($privacy)
+    {
         $this->privacy = $privacy;
     }
 
-    public function getTimeZone() {
+    public function getTimeZone()
+    {
         return $this->timeZone;
     }
 
-    public function setTimeZone($timeZone) {
+    public function setTimeZone($timeZone)
+    {
         $this->timeZone = $timeZone;
     }
 

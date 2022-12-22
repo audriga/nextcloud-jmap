@@ -2,58 +2,60 @@
 
 namespace OCA\JMAP\JMAP\Adapter;
 
-require(__DIR__ . '/../../../icalendar/zapcallib.php');
-
 use OCA\JMAP\JMAP\CalendarEvent\Location;
 use OCA\JMAP\JMAP\CalendarEvent\RecurrenceRule;
 use OCA\JMAP\JMAP\CalendarEvent\NDay;
-
 use OCA\JMAP\JMAP\Util\JmapCalendarEventAdapterUtil;
 
-class JmapCalendarEventAdapter {
-
+class JmapCalendarEventAdapter
+{
     // This is an iCal event component (and not an entire iCal object)
     private $iCalEvent;
 
-    public function __construct($iCalEvent) {
+    public function __construct($iCalEvent)
+    {
+        require(__DIR__ . '/../../../icalendar/zapcallib.php');
         $this->iCalEvent = $iCalEvent;
     }
 
-    public function getICalEvent() {
+    public function getICalEvent()
+    {
         return $this->iCalEvent;
     }
 
-    public function getDTStart() {
+    public function getDTStart()
+    {
         $dtStart = $this->iCalEvent->data["DTSTART"];
 
         if (isset($dtStart->getParameters()["value"])) {
             $date = \DateTime::createFromFormat("Ymd", $dtStart->getValues());
             $jmapStart = date_format($date, "Y-m-d");
-            
+
             // Add default values for time in the 'start' JMAP property
             $jmapStart .= "T00:00:00";
 
             return $jmapStart;
-        } else if (isset($dtStart->getParameters()["tzid"])) {
+        } elseif (isset($dtStart->getParameters()["tzid"])) {
             $date = \DateTime::createFromFormat("Ymd\THis", $dtStart->getValues());
             $jmapStart = date_format($date, "Y-m-d\TH:i:s");
             return $jmapStart;
         }
     }
 
-    public function getDuration() {
+    public function getDuration()
+    {
         $dtStart = $this->iCalEvent->data["DTSTART"];
         $dtEnd = $this->iCalEvent->data["DTEND"];
 
         if (isset($dtStart->getParameters()["value"])) {
             $format = "Ymd";
-            
+
             $dateStart = \DateTime::createFromFormat($format, $dtStart->getValues());
             $dateEnd = \DateTime::createFromFormat($format, $dtEnd->getValues());
 
             $interval = $dateEnd->diff($dateStart);
             return $interval->format('P%dDT%hH');
-        } else if (isset($dtStart->getParameters()["tzid"])) {
+        } elseif (isset($dtStart->getParameters()["tzid"])) {
             $format = "Ymd\THis";
 
             $dateStart = \DateTime::createFromFormat($format, $dtStart->getValues());
@@ -64,25 +66,28 @@ class JmapCalendarEventAdapter {
         }
     }
 
-    public function getSummary() {
+    public function getSummary()
+    {
         return $this->iCalEvent->data["SUMMARY"]->getValues();
     }
 
-    public function getDescription() {
+    public function getDescription()
+    {
         $description = $this->iCalEvent->data["DESCRIPTION"];
 
         if (is_null($description)) {
-            return NULL;
+            return null;
         }
 
         return $description->getValues();
     }
 
-    public function getStatus() {
+    public function getStatus()
+    {
         $status = $this->iCalEvent->data['STATUS'];
 
         if (is_null($status)) {
-            return NULL;
+            return null;
         }
 
         switch ($status->getValues()) {
@@ -97,38 +102,41 @@ class JmapCalendarEventAdapter {
             case 'CANCELLED':
                 return "cancelled";
                 break;
-            
+
             default:
-                return NULL;
+                return null;
                 break;
         }
     }
 
-    public function getUid() {
+    public function getUid()
+    {
         $uid = $this->iCalEvent->data['UID'];
 
         if (is_null($uid)) {
-            return NULL;
+            return null;
         }
 
         return $uid->getValues();
     }
 
-    public function getProdId() {
+    public function getProdId()
+    {
         $prodId = $this->iCalEvent->parentnode->data['PRODID'];
 
         if (is_null($prodId)) {
-            return NULL;
+            return null;
         }
 
         return $prodId->getValues();
     }
 
-    public function getCreated() {
+    public function getCreated()
+    {
         $created = $this->iCalEvent->data['CREATED'];
 
         if (is_null($created)) {
-            return NULL;
+            return null;
         }
 
         $iCalFormat = 'Ymd\THis\Z';
@@ -140,11 +148,12 @@ class JmapCalendarEventAdapter {
         return $jmapCreated;
     }
 
-    public function getLastModified() {
+    public function getLastModified()
+    {
         $lastModified = $this->iCalEvent->data['LAST-MODIFIED'];
 
         if (is_null($lastModified)) {
-            return NULL;
+            return null;
         }
 
         $iCalFormat = 'Ymd\THis\Z';
@@ -156,7 +165,8 @@ class JmapCalendarEventAdapter {
         return $jmapLastModified;
     }
 
-    public function getSequence() {
+    public function getSequence()
+    {
         $sequence = $this->iCalEvent->data['SEQUENCE'];
 
         if (is_null($sequence)) {
@@ -166,11 +176,12 @@ class JmapCalendarEventAdapter {
         return $sequence->getValues();
     }
 
-    public function getLocation() {
+    public function getLocation()
+    {
         $location = $this->iCalEvent->data['LOCATION'];
 
         if (is_null($location)) {
-            return NULL;
+            return null;
         }
 
         $jmapLocations = [];
@@ -181,8 +192,8 @@ class JmapCalendarEventAdapter {
             $jmapLocation = new Location();
             $jmapLocation->setType("Location");
             $jmapLocation->setName($lv);
-            
-            // Create an ID as a key in the array via base64 (it should just be some random string; I'm picking base64 as a random option)
+
+            // Create an ID as a key (should be a random string; Using base64 as a random option)
             $key = base64_encode($lv);
             $jmapLocations["$key"] = $jmapLocation;
         }
@@ -190,11 +201,12 @@ class JmapCalendarEventAdapter {
         return $jmapLocations;
     }
 
-    public function getCategories() {
+    public function getCategories()
+    {
         $categories = $this->iCalEvent->data['CATEGORIES'];
 
         if (is_null($categories)) {
-            return NULL;
+            return null;
         }
 
         $jmapKeywords = [];
@@ -208,16 +220,18 @@ class JmapCalendarEventAdapter {
         return $jmapKeywords;
     }
 
-    public function getRRule() {
+    public function getRRule()
+    {
         $rRule = $this->iCalEvent->data['RRULE'];
 
         if (is_null($rRule)) {
-            return NULL;
+            return null;
         }
 
         $rRuleValues = $rRule->getValues();
 
-        // The library treats commas in RRULE as separator for rules and thus we need to fix this by putting the separated RRULE back together as one whole (and not as separate rules)
+        // The library treats commas in RRULE as separator for rules
+        // fix this by putting the separated RRULE back together as one whole (and not as separate rules)
         if (!empty($rRule->getValues()) && count($rRule->getValues()) > 1) {
             $rRuleValues = implode(",", $rRule->getValues());
         }
@@ -226,74 +240,105 @@ class JmapCalendarEventAdapter {
         $jmapRecurrenceRule->setType("RecurrenceRule");
 
         foreach (explode(";", $rRuleValues) as $r) {
-            // Split each rule string by '=' and based upon its key (e.g. FREQ, COUNT, etc.), set the corresponding value to the JMAP RecurrenceRule object
+        // Split each rule string by '=' and based upon its key (e.g. FREQ, COUNT, etc.)
+        // set the corresponding value to the JMAP RecurrenceRule object
             $splitRule = explode("=", $r);
             $key = $splitRule[0];
             $value = $splitRule[1];
 
             switch ($key) {
                 case 'FREQ':
-                    $jmapRecurrenceRule->setFrequency(JmapCalendarEventAdapterUtil::convertFromICalFreqToJmapFrequency($value));
+                    $jmapRecurrenceRule->setFrequency(
+                        JmapCalendarEventAdapterUtil::convertFromICalFreqToJmapFrequency($value)
+                    );
                     break;
-                
+
                 case 'INTERVAL':
-                    $jmapRecurrenceRule->setInterval(JmapCalendarEventAdapterUtil::convertFromICalIntervalToJmapInterval($value));
+                    $jmapRecurrenceRule->setInterval(
+                        JmapCalendarEventAdapterUtil::convertFromICalIntervalToJmapInterval($value)
+                    );
                     break;
 
                 case 'RSCALE':
-                    $jmapRecurrenceRule->setRscale(JmapCalendarEventAdapterUtil::convertFromICalRScaleToJmapRScale($value));
+                    $jmapRecurrenceRule->setRscale(
+                        JmapCalendarEventAdapterUtil::convertFromICalRScaleToJmapRScale($value)
+                    );
                     break;
-                
+
                 case 'SKIP':
                     $jmapRecurrenceRule->setSkip(JmapCalendarEventAdapterUtil::convertFromICalSkipToJmapSkip($value));
                     break;
 
                 case 'WKST':
-                    $jmapRecurrenceRule->setFirstDayOfWeek(JmapCalendarEventAdapterUtil::convertFromICalWKSTToJmapFirstDayOfWeek($value));
+                    $jmapRecurrenceRule->setFirstDayOfWeek(
+                        JmapCalendarEventAdapterUtil::convertFromICalWKSTToJmapFirstDayOfWeek($value)
+                    );
                     break;
-                
+
                 case 'BYDAY':
-                    $jmapRecurrenceRule->setByDay(JmapCalendarEventAdapterUtil::convertFromICalByDayToJmapByDay($value));
+                    $jmapRecurrenceRule->setByDay(
+                        JmapCalendarEventAdapterUtil::convertFromICalByDayToJmapByDay($value)
+                    );
                     break;
 
                 case 'BYMONTHDAY':
-                    $jmapRecurrenceRule->setByMonthDay(JmapCalendarEventAdapterUtil::convertFromICalByMonthDayToJmapByMonthDay($value));
+                    $jmapRecurrenceRule->setByMonthDay(
+                        JmapCalendarEventAdapterUtil::convertFromICalByMonthDayToJmapByMonthDay($value)
+                    );
                     break;
-                
+
                 case 'BYMONTH':
-                    $jmapRecurrenceRule->setByMonth(JmapCalendarEventAdapterUtil::convertFromICalByMonthToJmapByMonth($value));
+                    $jmapRecurrenceRule->setByMonth(
+                        JmapCalendarEventAdapterUtil::convertFromICalByMonthToJmapByMonth($value)
+                    );
                     break;
 
                 case 'BYYEARDAY':
-                    $jmapRecurrenceRule->setByYearDay(JmapCalendarEventAdapterUtil::convertFromICalByYearDayToJmapByYearDay($value));
+                    $jmapRecurrenceRule->setByYearDay(
+                        JmapCalendarEventAdapterUtil::convertFromICalByYearDayToJmapByYearDay($value)
+                    );
                     break;
-                
+
                 case 'BYWEEKNO':
-                    $jmapRecurrenceRule->setByWeekNo(JmapCalendarEventAdapterUtil::convertFromICalByWeekNoToJmapByWeekNo($value));
+                    $jmapRecurrenceRule->setByWeekNo(
+                        JmapCalendarEventAdapterUtil::convertFromICalByWeekNoToJmapByWeekNo($value)
+                    );
                     break;
 
                 case 'BYHOUR':
-                    $jmapRecurrenceRule->setByHour(JmapCalendarEventAdapterUtil::convertFromICalByHourToJmapByHour($value));
+                    $jmapRecurrenceRule->setByHour(
+                        JmapCalendarEventAdapterUtil::convertFromICalByHourToJmapByHour($value)
+                    );
                     break;
-                
+
                 case 'BYMINUTE':
-                    $jmapRecurrenceRule->setByMinute(JmapCalendarEventAdapterUtil::convertFromICalByMinuteToJmapByMinute($value));
+                    $jmapRecurrenceRule->setByMinute(
+                        JmapCalendarEventAdapterUtil::convertFromICalByMinuteToJmapByMinute($value)
+                    );
                     break;
 
                 case 'BYSECOND':
-                    $jmapRecurrenceRule->setBySecond(JmapCalendarEventAdapterUtil::convertFromICalBySecondToJmapBySecond($value));
+                    $jmapRecurrenceRule->setBySecond(
+                        JmapCalendarEventAdapterUtil::convertFromICalBySecondToJmapBySecond($value)
+                    );
                     break;
-                
+
                 case 'BYSETPOS':
-                    $jmapRecurrenceRule->setBySetPosition(JmapCalendarEventAdapterUtil::convertFromICalBySetPositionToJmapBySetPos($value));
+                    $jmapRecurrenceRule->setBySetPosition(
+                        JmapCalendarEventAdapterUtil::convertFromICalBySetPositionToJmapBySetPos($value)
+                    );
                     break;
 
                 case 'COUNT':
-                    $jmapRecurrenceRule->setCount(JmapCalendarEventAdapterUtil::convertFromICalCountToJmapCount($value));
+                    $jmapRecurrenceRule->setCount(
+                        JmapCalendarEventAdapterUtil::convertFromICalCountToJmapCount($value)
+                    );
                     break;
-                
+
                 case 'UNTIL':
-                    $jmapRecurrenceRule->setUntil(JmapCalendarEventAdapterUtil::convertFromICalUntilToJmapUntil($value));
+                    $jmapRecurrenceRule->setUntil(
+                        JmapCalendarEventAdapterUtil::convertFromICalUntilToJmapUntil($value)
+                    );
                     break;
 
                 default:
@@ -305,15 +350,16 @@ class JmapCalendarEventAdapter {
         return $jmapRecurrenceRule;
     }
 
-    public function getExDate() {
+    public function getExDate()
+    {
         $exDate = $this->iCalEvent->data['EXDATE'];
 
         if (is_null($exDate)) {
-            return NULL;
+            return null;
         }
 
         $splitExDateValues = explode(",", $exDate->getValues());
-        
+
         $jmapRecurrenceOverrides = [];
 
         foreach ($splitExDateValues as $v) {
@@ -329,21 +375,23 @@ class JmapCalendarEventAdapter {
         return $jmapRecurrenceOverrides;
     }
 
-    public function getPriority() {
+    public function getPriority()
+    {
         $priority = $this->iCalEvent->data['PRIORITY'];
 
         if (is_null($priority)) {
-            return NULL;
+            return null;
         }
 
         return $priority->getValues();
     }
 
-    public function getClass() {
+    public function getClass()
+    {
         $class = $this->iCalEvent->data['CLASS'];
 
         if (is_null($class)) {
-            return NULL;
+            return null;
         }
 
         switch ($class->getValues()) {
@@ -357,11 +405,12 @@ class JmapCalendarEventAdapter {
                 return "secret";
 
             default:
-                return NULL;
+                return null;
         }
     }
 
-    public function getTimeZone() {
+    public function getTimeZone()
+    {
         $timezoneComponent = $this->iCalEvent->parentNode->tree->child['VTIMEZONE'];
         return $timezoneComponent;
     }

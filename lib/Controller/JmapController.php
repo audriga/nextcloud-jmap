@@ -5,10 +5,6 @@ namespace OCA\JMAP\Controller;
 use OCP\IRequest;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
-
-// iCal lib
-require(__DIR__ . '/../../icalendar/zapcallib.php');
-
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 
@@ -18,7 +14,8 @@ class JmapController extends Controller
 
     private function init()
     {
-        require_once __DIR__ . '/../../vendor/autoload.php';
+        // iCal lib
+        require(__DIR__ . '/../../icalendar/zapcallib.php');
 
         // Print debug output via API on error
         // NOTE: Do not use on public-facing setups
@@ -124,8 +121,10 @@ class JmapController extends Controller
     // private function getAppointments()
     // {
     //     /**
-    //      * Access all data from the DB and return it in the response (currently running a hardcoded SQL query to read all appointments data from the db)
-    //      * Warning: the SQL query returns all entries from the 'oc_calendarobjects' table (which includes BOTH appointments (VEVENT) and tasks (VTODO))
+    //      * Access all data from the DB and return it in the response
+    //        (currently running a hardcoded SQL query to read all appointments data from the db)
+    //      * Warning: the SQL query returns all entries from the 'oc_calendarobjects' table
+    //        (which includes BOTH appointments (VEVENT) and tasks (VTODO))
     //     */
     //     $db = \OC::$server->getDatabaseConnection();
     //     $sql = 'select * from oc_calendarobjects';

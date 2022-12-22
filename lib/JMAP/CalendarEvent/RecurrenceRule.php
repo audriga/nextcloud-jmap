@@ -24,143 +24,178 @@ class RecurrenceRule implements JsonSerializable
     private $count;
     private $until;
 
-    public function getType() {
+    public function getType()
+    {
         return $this->type;
     }
 
-    public function setType($type) {
+    public function setType($type)
+    {
         $this->type = $type;
     }
 
-    public function getFrequency() {
+    public function getFrequency()
+    {
         return $this->frequency;
     }
 
-    public function setFrequency($frequency) {
+    public function setFrequency($frequency)
+    {
         $this->frequency = $frequency;
     }
 
-    public function getInterval() {
+    public function getInterval()
+    {
         return $this->interval;
     }
 
-    public function setInterval($interval) {
+    public function setInterval($interval)
+    {
         $this->interval = $interval;
     }
 
-    public function getRscale() {
+    public function getRscale()
+    {
         return $this->rscale;
     }
 
-    public function setRscale($rscale) {
+    public function setRscale($rscale)
+    {
         $this->rscale = $rscale;
     }
 
-    public function getSkip() {
+    public function getSkip()
+    {
         return $this->skip;
     }
 
-    public function setSkip($skip) {
+    public function setSkip($skip)
+    {
         $this->skip = $skip;
     }
 
-    public function getFirstDayOfWeek() {
+    public function getFirstDayOfWeek()
+    {
         return $this->firstDayOfWeek;
     }
 
-    public function setFirstDayOfWeek($firstDayOfWeek) {
+    public function setFirstDayOfWeek($firstDayOfWeek)
+    {
         $this->firstDayOfWeek = $firstDayOfWeek;
     }
 
-    public function getByDay() {
+    public function getByDay()
+    {
         return $this->byDay;
     }
 
-    public function setByDay($byDay) {
+    public function setByDay($byDay)
+    {
         $this->$byDay = $byDay;
     }
 
-    public function getByMonthDay() {
+    public function getByMonthDay()
+    {
         return $this->byMonthDay;
     }
 
-    public function setByMonthDay($byMonthDay) {
+    public function setByMonthDay($byMonthDay)
+    {
         $this->byMonthDay = $byMonthDay;
     }
 
-    public function getByMonth() {
+    public function getByMonth()
+    {
         return $this->byMonth;
     }
 
-    public function setByMonth($byMonth) {
+    public function setByMonth($byMonth)
+    {
         $this->byMonth = $byMonth;
     }
 
-    public function getByYearDay() {
+    public function getByYearDay()
+    {
         return $this->byYearDay;
     }
 
-    public function setByYearDay($byYearDay) {
+    public function setByYearDay($byYearDay)
+    {
         $this->byYearDay = $byYearDay;
     }
 
-    public function getByWeekNo() {
+    public function getByWeekNo()
+    {
         return $this->byWeekNo;
     }
 
-    public function setByWeekNo($byWeekNo) {
+    public function setByWeekNo($byWeekNo)
+    {
         $this->byWeekNo = $byWeekNo;
     }
 
-    public function getByHour() {
+    public function getByHour()
+    {
         return $this->byHour;
     }
 
-    public function setByHour($byHour) {
+    public function setByHour($byHour)
+    {
         $this->byHour = $byHour;
     }
 
-    public function getByMinute() {
+    public function getByMinute()
+    {
         return $this->byMinute;
     }
 
-    public function setByMinute($byMinute) {
+    public function setByMinute($byMinute)
+    {
         $this->byMinute = $byMinute;
     }
 
-    public function getBySecond() {
+    public function getBySecond()
+    {
         return $this->bySecond;
     }
 
-    public function setBySecond($bySecond) {
+    public function setBySecond($bySecond)
+    {
         $this->bySecond = $bySecond;
     }
 
-    public function getBySetPosition() {
+    public function getBySetPosition()
+    {
         return $this->bySetPosition;
     }
 
-    public function setBySetPosition($bySetPosition) {
+    public function setBySetPosition($bySetPosition)
+    {
         $this->bySetPosition = $bySetPosition;
     }
 
-    public function getCount() {
+    public function getCount()
+    {
         return $this->count;
     }
 
-    public function setCount($count) {
+    public function setCount($count)
+    {
         $this->count = $count;
     }
 
-    public function getUntil() {
+    public function getUntil()
+    {
         return $this->until;
     }
 
-    public function setUntil($until) {
+    public function setUntil($until)
+    {
         $this->until = $until;
     }
 
-    public function jsonSerialize() {
+    public function jsonSerialize()
+    {
         return (object)[
             "@type" => $this->getType(),
             "frequency" => $this->getFrequency(),
@@ -181,4 +216,4 @@ class RecurrenceRule implements JsonSerializable
             "until" => $this->getUntil()
         ];
     }
-} 
+}

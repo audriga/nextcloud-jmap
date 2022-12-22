@@ -6,13 +6,12 @@ use JsonSerializable;
 
 class ContactInformation implements JsonSerializable
 {
-
     private $type;
     private $label;
     private $value;
     private $isDefault;
 
-    
+
     public function getType()
     {
         return $this->type;
@@ -64,4 +63,3 @@ class ContactInformation implements JsonSerializable
             ];
     }
 }
-

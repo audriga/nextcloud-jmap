@@ -15,67 +15,83 @@ class Location implements JsonSerializable
     private $coordinates;
     private $linkIds;
 
-    public function getType() {
+    public function getType()
+    {
         return $this->type;
     }
 
-    public function setType($type) {
+    public function setType($type)
+    {
         $this->type = $type;
     }
 
-    public function getName() {
+    public function getName()
+    {
         return $this->name;
     }
 
-    public function setName($name) {
+    public function setName($name)
+    {
         $this->name = $name;
     }
 
-    public function getDescription() {
+    public function getDescription()
+    {
         return $this->description;
     }
 
-    public function setDescription($description) {
+    public function setDescription($description)
+    {
         $this->description = $description;
     }
 
-    public function getLocationTypes() {
+    public function getLocationTypes()
+    {
         return $this->locationTypes;
     }
 
-    public function setLocationTypes($locationTypes) {
+    public function setLocationTypes($locationTypes)
+    {
         $this->locationTypes = $locationTypes;
     }
 
-    public function getRelativeTo() {
+    public function getRelativeTo()
+    {
         return $this->relativeTo;
     }
 
-    public function setRelativeTo($relativeTo) {
+    public function setRelativeTo($relativeTo)
+    {
         $this->relativeTo = $relativeTo;
     }
 
-    public function getTimeZone() {
+    public function getTimeZone()
+    {
         return $this->timeZone;
     }
 
-    public function setTimeZone($timeZone) {
+    public function setTimeZone($timeZone)
+    {
         $this->timeZone = $timeZone;
     }
-    
-    public function getCoordinates() {
+
+    public function getCoordinates()
+    {
         return $this->coordinates;
     }
 
-    public function setCoordinates($coordinates) {
+    public function setCoordinates($coordinates)
+    {
         $this->coordinates = $coordinates;
     }
 
-    public function getLinkIds() {
+    public function getLinkIds()
+    {
         return $this->linkIds;
     }
 
-    public function setLinkIds($linkIds) {
+    public function setLinkIds($linkIds)
+    {
         $this->linkIds = $linkIds;
     }
 

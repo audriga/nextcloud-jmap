@@ -52,8 +52,9 @@ class Contact implements JsonSerializable
         return $this->id;
     }
 
-    public function setId($id) {
-	    $this->id = $id;
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     public function getFirstName()
@@ -61,8 +62,9 @@ class Contact implements JsonSerializable
         return $this->firstName;
     }
 
-    public function setFirstName($firstName) {
-	    $this->firstName = $firstName;
+    public function setFirstName($firstName)
+    {
+        $this->firstName = $firstName;
     }
 
     public function getLastName()
@@ -70,79 +72,98 @@ class Contact implements JsonSerializable
         return $this->lastName;
     }
 
-    public function setLastName($lastName) {
-	    $this->lastName = $lastName;
+    public function setLastName($lastName)
+    {
+        $this->lastName = $lastName;
     }
 
-    public function getPrefix() {
-	    return $this->prefix;
+    public function getPrefix()
+    {
+        return $this->prefix;
     }
 
-    public function setPrefix($prefix) {
-	    $this->prefix = $prefix;
+    public function setPrefix($prefix)
+    {
+        $this->prefix = $prefix;
     }
 
-    public function getSuffix() {
+    public function getSuffix()
+    {
         return $this->suffix;
     }
 
-    public function setSuffix($suffix) {
+    public function setSuffix($suffix)
+    {
         $this->suffix = $suffix;
     }
 
-    public function getNickname() {
+    public function getNickname()
+    {
         return $this->nickname;
     }
 
-    public function setNickname($nickname) {
+    public function setNickname($nickname)
+    {
         $this->nickname = $nickname;
     }
 
-    public function getBirthday() {
+    public function getBirthday()
+    {
         return $this->birthday;
     }
 
-    public function setBirthday($birthday) {
+    public function setBirthday($birthday)
+    {
         $this->birthday = $birthday;
     }
 
-    public function getAnniversary() {
+    public function getAnniversary()
+    {
         return $this->anniversary;
     }
 
-    public function setAnniversary($anniversary) {
+    public function setAnniversary($anniversary)
+    {
         $this->anniversary = $anniversary;
     }
 
-    public function getJobTitle() {
+    public function getJobTitle()
+    {
         return $this->jobTitle;
     }
 
-    public function setJobTitle($jobTitle) {
+    public function setJobTitle($jobTitle)
+    {
         $this->jobTitle = $jobTitle;
     }
 
-    public function getCompany() {
+    public function getCompany()
+    {
         return $this->company;
     }
 
-    public function setCompany($company) {
+    public function setCompany($company)
+    {
         $this->company = $company;
     }
 
-    public function getDepartment() {
+    public function getDepartment()
+    {
         return $this->department;
     }
 
-    public function setDepartment($department) {
+    public function setDepartment($department)
+    {
         $this->department = $department;
     }
 
-    public function getNotes() {
+    public function getNotes()
+    {
         return $this->notes;
     }
 
-    public function setNotes($notes) {
+    public function setNotes($notes)
+    {
         $this->notes = $notes;
     }
 
@@ -153,7 +174,7 @@ class Contact implements JsonSerializable
 
     public function setEmails($emails)
     {
-        $this->emails =$emails;
+        $this->emails = $emails;
     }
 
     public function getPhones()
@@ -191,8 +212,9 @@ class Contact implements JsonSerializable
         return $this->uid;
     }
 
-    public function setUid($uid) {
-	    $this->uid = $uid;
+    public function setUid($uid)
+    {
+        $this->uid = $uid;
     }
 
     public function jsonSerialize()

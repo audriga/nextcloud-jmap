@@ -4,22 +4,23 @@ namespace OCA\JMAP\JMAP\Util;
 
 use OCA\JMAP\JMAP\CalendarEvent\NDay;
 
-class JmapCalendarEventAdapterUtil {
-    
+class JmapCalendarEventAdapterUtil
+{
     // Below functions are for iCal -> JMAP value conversion
 
-    public static function convertFromICalFreqToJmapFrequency($freq) {
+    public static function convertFromICalFreqToJmapFrequency($freq)
+    {
         if (is_null($freq)) {
-            return NULL;
+            return null;
         }
-        
-        $jmapFrequency = NULL;
+
+        $jmapFrequency = null;
 
         switch ($freq) {
             case 'YEARLY':
                 $jmapFrequency = 'yearly';
                 break;
-            
+
             case 'MONTHLY':
                 $jmapFrequency = 'monthly';
                 break;
@@ -43,16 +44,17 @@ class JmapCalendarEventAdapterUtil {
             case 'SECONDLY':
                 $jmapFrequency = 'secondly';
                 break;
-            
+
             default:
-                $jmapFrequency = NULL;
+                $jmapFrequency = null;
                 break;
         }
 
         return $jmapFrequency;
     }
 
-    public static function convertFromICalIntervalToJmapInterval($interval) {
+    public static function convertFromICalIntervalToJmapInterval($interval)
+    {
         if (is_null($interval)) {
             // 1 is the default JMAP value for interval, that's why set to 1 if input is NULL
             return 1;
@@ -61,21 +63,23 @@ class JmapCalendarEventAdapterUtil {
         return $interval;
     }
 
-    public static function convertFromICalRScaleToJmapRScale($rscale) {
+    public static function convertFromICalRScaleToJmapRScale($rscale)
+    {
         if (is_null($rscale)) {
-            return NULL;
+            return null;
         }
 
-        // The JMAP rscale is essentially the iCal rscale, but simply in lowercase, that's why return lowercased version of the input
+        // JMAP rscale is essentially lowercase iCal rscale. That's why return lowercased version.
         return strtolower($rscale);
     }
 
-    public static function convertFromICalSkipToJmapSkip($skip) {
+    public static function convertFromICalSkipToJmapSkip($skip)
+    {
         if (is_null($skip)) {
-            return NULL;
+            return null;
         }
 
-        $jmapSkip = NULL;
+        $jmapSkip = null;
 
         switch ($skip) {
             case 'OMIT':
@@ -89,21 +93,22 @@ class JmapCalendarEventAdapterUtil {
             case 'FORWARD':
                 $jmapSkip = 'forward';
                 break;
-            
+
             default:
-                $jmapSkip = NULL;
+                $jmapSkip = null;
                 break;
         }
 
         return $jmapSkip;
     }
 
-    public static function convertFromICalWKSTToJmapFirstDayOfWeek($wkst) {
+    public static function convertFromICalWKSTToJmapFirstDayOfWeek($wkst)
+    {
         if (is_null($wkst)) {
-            return NULL;
+            return null;
         }
 
-        $jmapFirstDayOfWeek = NULL;
+        $jmapFirstDayOfWeek = null;
 
         switch ($wkst) {
             case 'MO':
@@ -133,18 +138,19 @@ class JmapCalendarEventAdapterUtil {
             case 'SU':
                 $jmapFirstDayOfWeek = 'su';
                 break;
-            
+
             default:
-                $jmapFirstDayOfWeek = NULL;
+                $jmapFirstDayOfWeek = null;
                 break;
         }
 
         return $jmapFirstDayOfWeek;
     }
 
-    public static function convertFromICalByDayToJmapByDay($byDay) {
+    public static function convertFromICalByDayToJmapByDay($byDay)
+    {
         if (is_null($byDay)) {
-            return NULL;
+            return null;
         }
 
         $splitByDayArray = explode(",", $byDay);
@@ -153,7 +159,7 @@ class JmapCalendarEventAdapterUtil {
 
         foreach ($splitByDayArray as $bd) {
             // Parse the BYDAY string from iCal below
-        
+
             $byDayWeekDayString;
             $byDayWeekNumberString;
 
@@ -183,13 +189,14 @@ class JmapCalendarEventAdapterUtil {
         return $jmapByDay;
     }
 
-    public static function convertFromICalByMonthDayToJmapByMonthDay($byMonthDay) {
+    public static function convertFromICalByMonthDayToJmapByMonthDay($byMonthDay)
+    {
         if (is_null($byMonthDay)) {
-            return NULL;
+            return null;
         }
 
         $splitByMonthDay = explode(",", $byMonthDay);
-        
+
         foreach ($splitByMonthDay as $s) {
             $s = (int) $s;
         }
@@ -197,19 +204,21 @@ class JmapCalendarEventAdapterUtil {
         return $splitByMonthDay;
     }
 
-    public static function convertFromICalByMonthToJmapByMonth($byMonth) {
+    public static function convertFromICalByMonthToJmapByMonth($byMonth)
+    {
         if (is_null($byMonth)) {
-            return NULL;
+            return null;
         }
 
         $splitByMonth = explode(",", $byMonth);
-        
+
         return $splitByMonth;
     }
 
-    public static function convertFromICalByYearDayToJmapByYearDay($byYearDay) {
+    public static function convertFromICalByYearDayToJmapByYearDay($byYearDay)
+    {
         if (is_null($byYearDay)) {
-            return NULL;
+            return null;
         }
 
         $splitByYearDay = explode(",", $byYearDay);
@@ -221,9 +230,10 @@ class JmapCalendarEventAdapterUtil {
         return $splitByYearDay;
     }
 
-    public static function convertFromICalByWeekNoToJmapByWeekNo($byWeekNo) {
+    public static function convertFromICalByWeekNoToJmapByWeekNo($byWeekNo)
+    {
         if (is_null($byWeekNo)) {
-            return NULL;
+            return null;
         }
 
         $splitByWeekNo = explode(",", $byWeekNo);
@@ -235,9 +245,10 @@ class JmapCalendarEventAdapterUtil {
         return $splitByWeekNo;
     }
 
-    public static function convertFromICalByHourToJmapByHour($byHour) {
+    public static function convertFromICalByHourToJmapByHour($byHour)
+    {
         if (is_null($byHour)) {
-            return NULL;
+            return null;
         }
 
         $splitByHour = explode(",", $byHour);
@@ -249,9 +260,10 @@ class JmapCalendarEventAdapterUtil {
         return $splitByHour;
     }
 
-    public static function convertFromICalByMinuteToJmapByMinute($byMinute) {
+    public static function convertFromICalByMinuteToJmapByMinute($byMinute)
+    {
         if (is_null($byMinute)) {
-            return NULL;
+            return null;
         }
 
         $splitByMinute = explode(",", $byMinute);
@@ -263,9 +275,10 @@ class JmapCalendarEventAdapterUtil {
         return $splitByMinute;
     }
 
-    public static function convertFromICalBySecondToJmapBySecond($bySecond) {
+    public static function convertFromICalBySecondToJmapBySecond($bySecond)
+    {
         if (is_null($bySecond)) {
-            return NULL;
+            return null;
         }
 
         $splitBySecond = explode(",", $bySecond);
@@ -277,9 +290,10 @@ class JmapCalendarEventAdapterUtil {
         return $splitBySecond;
     }
 
-    public static function convertFromICalBySetPositionToJmapBySetPos($bySetPosition) {
+    public static function convertFromICalBySetPositionToJmapBySetPos($bySetPosition)
+    {
         if (is_null($bySetPosition)) {
-            return NULL;
+            return null;
         }
 
         $splitBySetPosition = explode(",", $bySetPosition);
@@ -291,17 +305,19 @@ class JmapCalendarEventAdapterUtil {
         return $splitBySetPosition;
     }
 
-    public static function convertFromICalCountToJmapCount($count) {
+    public static function convertFromICalCountToJmapCount($count)
+    {
         if (is_null($count)) {
-            return NULL;
+            return null;
         }
 
         return (int) $count;
     }
 
-    public static function convertFromICalUntilToJmapUntil($until) {
+    public static function convertFromICalUntilToJmapUntil($until)
+    {
         if (is_null($until)) {
-            return NULL;
+            return null;
         }
 
         $iCalUntilDate = \DateTime::createFromFormat("Ymd\THis", $until);
@@ -309,5 +325,4 @@ class JmapCalendarEventAdapterUtil {
 
         return $jmapUntil;
     }
-
 }

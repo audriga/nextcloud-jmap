@@ -9,23 +9,28 @@ class NDay implements JsonSerializable
     private $day;
     private $nthOfPeriod;
 
-    public function getDay() {
+    public function getDay()
+    {
         return $this->day;
     }
 
-    public function setDay($day) {
+    public function setDay($day)
+    {
         $this->day = $day;
     }
 
-    public function getNthOfPeriod() {
+    public function getNthOfPeriod()
+    {
         return $this->nthOfPeriod;
     }
 
-    public function setNthOfPeriod($nthOfPeriod) {
+    public function setNthOfPeriod($nthOfPeriod)
+    {
         $this->nthOfPeriod = $nthOfPeriod;
     }
 
-    public function jsonSerialize() {
+    public function jsonSerialize()
+    {
         return (object)[
             "day" => $this->getDay(),
             "nthOfPeriod" => $this->getNthOfPeriod()
