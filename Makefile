@@ -66,6 +66,12 @@ ifneq (,$(wildcard $(CURDIR)/js/package.json))
 	make npm
 endif
 
+# Update dependencies and make dev tools available for development
+.PHONY: update
+update:
+	git submodule update --init --recursive
+	php $(build_tools_directory)/composer.phar update --prefer-dist
+
 # Installs and updates the composer dependencies. If composer is not installed
 # a copy is fetched from the web
 .PHONY: composer
