@@ -45,6 +45,7 @@ source_build_directory=$(CURDIR)/build/artifacts/source
 source_package_name=$(source_build_directory)/$(app_name)
 appstore_build_directory=$(CURDIR)/build/artifacts/appstore
 appstore_package_name=$(appstore_build_directory)/$(app_name)
+nextcloud_test_directory=$(NEXTCLOUD_TEST_DIR)
 npm=$(shell which npm 2> /dev/null)
 composer=$(shell which composer 2> /dev/null)
 
@@ -153,7 +154,29 @@ appstore:
 	--exclude="../$(app_name)/.*" \
 	--exclude="../$(app_name)/js/.*" \
 
+# Linting with PHP-CS
+.PHONY: lint
+lint:
+	# Make devtools available again
+	php $(build_tools_directory)/composer.phar install --prefer-dist
+
+	# Lint with CodeSniffer
+	vendor/bin/phpcs lib/
+
+# Requires:
+# * NEXTCLOUD_TEST_DIR - apps/jmap directory of a nextcloud instance. Files will be copied to it.
+# Example usage: NEXTCLOUD_TEST_DIR=~/ops/containers/nextcloud/custom_apps/jmap make test
 .PHONY: test
 test: composer
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+ifeq (, $(nextcloud_test_directory))
+	@echo "Tests must be run inside Nextcloud. You must specify NEXTCLOUD_TEST_DIR."
+else
+	cp -ru * $(nextcloud_test_directory)
+	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
+	# cd $(nextcloud_test_directory) && vendor/phpunit/phpunit/phpunit -c phpunit.xml
+	# cd $(nextcloud_test_directory) && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
+endif
+
+.PHONY: fulltest
+fulltest: lint test
