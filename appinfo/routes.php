@@ -12,6 +12,7 @@
 return [
     'routes' => [
         ['name' => 'jmap#index', 'url' => '/index', 'verb' => 'GET'],
+        ['name' => 'jmap#bla', 'url' => '/bla', 'verb' => 'GET'],
         ['name' => 'jmap#jmap', 'url' => '/jmap', 'verb' => 'POST'],
     ]
 ];

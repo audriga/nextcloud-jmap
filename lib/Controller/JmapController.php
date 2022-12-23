@@ -4,23 +4,45 @@ namespace OCA\JMAP\Controller;
 
 use OCP\IRequest;
 use OCP\AppFramework\Http\DataResponse;
-use OCP\AppFramework\Controller;
+use OCP\AppFramework\ApiController;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 
-class JmapController extends Controller
+class JmapController extends ApiController
 {
+    // Define version
+    private $OXP_VERSION = '1.3.0';
+
     private $userId;
+
+    private $oxpConfig;
 
     private function init()
     {
-        // iCal lib
-        require(__DIR__ . '/../../icalendar/zapcallib.php');
-
         // Print debug output via API on error
         // NOTE: Do not use on public-facing setups
         $handler = new \OpenXPort\Jmap\Core\ErrorHandler();
         $handler->setHandlers();
+
+        // Build config
+        $configDefault = include(__DIR__ . '/../../config/config.default.php');
+        $configFile = __DIR__ . '/../../config/config.php';
+        $this->oxpConfig = $configDefault;
+
+        if (file_exists($configFile)) {
+            $configUser = include($configFile);
+            if (is_array($configUser)) {
+                $this->oxpConfig = array_merge($configDefault, $configUser);
+            }
+        };
+        // Decode JSON post body here in case the debug capability is included
+        $this->jmapRequest = \OpenXPort\Util\HttpUtil::getRequestBody();
+
+        // Initialize logging
+        \OpenXPort\Util\Logger::init($this->oxpConfig, $this->jmapRequest);
+        $logger = \OpenXPort\Util\Logger::getInstance();
+
+        $logger->notice("Running PHP v" . phpversion() . ", TODO v NEXTCLOUD, Plugin v" . $this->OXP_VERSION);
     }
 
     public function __construct($AppName, IRequest $request, $UserId)
@@ -29,6 +51,11 @@ class JmapController extends Controller
         $this->userId = $UserId;
         //print_r("UserId is: " . $UserId . " and userId is: " . $this->userId);
         $this->init();
+    }
+
+    public function bla()
+    {
+        return new DataResponse('OpenXPort JMAP API for Nextcloud, powered by NGI DAPSI, is enabled.');
     }
 
     /**
@@ -101,8 +128,8 @@ class JmapController extends Controller
             "ContactGroups" => null,
         );
 
-        $server = new \OpenXPort\Jmap\Core\Server($accessors, $adapters, $mappers);
-        $server->listen();
+        $server = new \OpenXPort\Jmap\Core\Server($accessors, $adapters, $mappers, $this->oxpConfig);
+        $server->handleJmapRequest($this->jmapRequest);
 
         // Currently we use die here, since we need to stop any execution after '$server->listen();'.
         // That's because we don't have a return statement for this function.

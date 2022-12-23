@@ -20,8 +20,6 @@ class PageController extends Controller
 
     public function __construct($AppName, IRequest $request, $UserId)
     {
-        // iCal lib
-        require(__DIR__ . '/../../icalendar/zapcallib.php');
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
     }
