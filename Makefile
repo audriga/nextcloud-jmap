@@ -165,16 +165,15 @@ lint:
 
 # Requires:
 # * NEXTCLOUD_TEST_DIR - apps/jmap directory of a nextcloud instance. Files will be copied to it.
+# * podman to run tests
 # Example usage: NEXTCLOUD_TEST_DIR=~/ops/containers/nextcloud/custom_apps/jmap make test
 .PHONY: test
 test: composer
 ifeq (, $(nextcloud_test_directory))
 	@echo "Tests must be run inside Nextcloud. You must specify NEXTCLOUD_TEST_DIR."
 else
-	cp -ru * $(nextcloud_test_directory)
+	find . -type f -not -iwholename '*/.git*' -exec cp -ru '{}' '$(nextcloud_test_directory)/{}' ';'
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
-	# cd $(nextcloud_test_directory) && vendor/phpunit/phpunit/phpunit -c phpunit.xml
-	# cd $(nextcloud_test_directory) && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
 endif
 
