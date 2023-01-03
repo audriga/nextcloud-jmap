@@ -47,7 +47,7 @@ appstore_build_directory=$(CURDIR)/build/artifacts/appstore
 appstore_package_name=$(appstore_build_directory)/$(app_name)
 nextcloud_test_directory=$(NEXTCLOUD_TEST_DIR)
 npm=$(shell which npm 2> /dev/null)
-composer=$(shell which composer 2> /dev/null)
+composer=$(shell ls $(build_tools_directory)/composer_fresh.phar 2> /dev/null)
 
 all: init
 
