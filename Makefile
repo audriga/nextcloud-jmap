@@ -39,6 +39,8 @@
 #        "build": "node node_modules/gulp-cli/bin/gulp.js"
 #    },
 
+project := $(OPENXPORT_PROJECT)
+
 app_name=$(notdir $(CURDIR))
 build_tools_directory=$(CURDIR)/build/tools
 source_build_directory=$(CURDIR)/build/artifacts/source
@@ -48,6 +50,7 @@ appstore_package_name=$(appstore_build_directory)/$(app_name)
 nextcloud_test_directory=$(NEXTCLOUD_TEST_DIR)
 npm=$(shell which npm 2> /dev/null)
 composer=$(shell ls $(build_tools_directory)/composer_fresh.phar 2> /dev/null)
+version=$(shell git tag --sort=committerdate | tail -1)
 
 all: init
 
@@ -175,6 +178,18 @@ else
 	find . -type f -not -iwholename '*/.git*' -exec cp -ru '{}' '$(nextcloud_test_directory)/{}' ';'
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
+endif
+
+# Build a ZIP for deploying
+.PHONY: zip
+zip:
+	php $(build_tools_directory)/composer.phar install --prefer-dist --no-dev
+	php $(build_tools_directory)/composer.phar archive -f zip --dir=build/archives --file=jmap-nextcloud-$(version)
+# In case of project build: rename and put jmap folder to root level
+ifneq (, $(project))
+	mkdir -p build/tmp/jmap
+	unzip -q build/archives/jmap-nextcloud-$(version).zip -d build/tmp/jmap
+	cd build/tmp && zip -qmr jmap-nextcloud-$(version)-$(project).zip jmap/ && mv jmap-nextcloud-$(version)-$(project).zip ../archives
 endif
 
 .PHONY: fulltest
