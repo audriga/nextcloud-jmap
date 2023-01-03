@@ -6,6 +6,7 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCA\JMAP\Middleware\ErrorResponseMiddleware;
 
 class Application extends App implements IBootstrap
 {
@@ -23,6 +24,8 @@ class Application extends App implements IBootstrap
         require(__DIR__ . '/../../icalendar/zapcallib.php');
         // Register the composer autoloader for packages shipped by this app
         include_once __DIR__ . '/../../vendor/autoload.php';
+
+        $context->registerMiddleware(ErrorResponseMiddleware::class);
     }
 
     public function boot(IBootContext $context): void
