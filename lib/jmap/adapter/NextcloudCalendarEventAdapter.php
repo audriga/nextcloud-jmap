@@ -235,7 +235,7 @@ class NextcloudCalendarEventAdapter extends AbstractAdapter
 
         // The library treats commas in RRULE as separator for rules and thus we need to fix this
         // by putting the separated RRULE back together as one whole (and not as separate rules)
-        if (!empty($rRule->getValues()) && count($rRule->getValues()) > 1) {
+        if (!empty($rRuleValues) && is_array($rRuleValues) && count($rRuleValues) > 1) {
             $rRuleValues = implode(",", $rRule->getValues());
         }
 
