@@ -9,12 +9,6 @@ class NextcloudCalendarEventAdapter extends AbstractAdapter
     // This is an iCal event component (and not an entire iCal object)
     private $iCalEvent;
 
-    public function __construct()
-    {
-        // Put the require for the iCalendar lib inside the constructor, so that phpcs does not complain.
-        require(__DIR__ . '/../../../icalendar/zapcallib.php');
-    }
-
     public function getICalEvent()
     {
         return $this->iCalEvent;

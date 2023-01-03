@@ -14,6 +14,7 @@ use OCA\JMAP\JMAP\Adapter\JmapContactAdapter;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 
+/* This is for displaying a page in the UI. TODO Currently unused. */
 class PageController extends Controller
 {
     private $userId;
