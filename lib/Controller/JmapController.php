@@ -17,6 +17,12 @@ class JmapController extends ApiController
 
     private $oxpConfig;
 
+    private $accessors;
+
+    private $adapters;
+
+    private $mappers;
+
     private function init()
     {
         // Print debug output via API on error
@@ -43,53 +49,8 @@ class JmapController extends ApiController
         $logger = \OpenXPort\Util\Logger::getInstance();
 
         $logger->notice("Running PHP v" . phpversion() . ", TODO v NEXTCLOUD, Plugin v" . $this->OXP_VERSION);
-    }
 
-    public function __construct($AppName, IRequest $request, $UserId)
-    {
-        parent::__construct($AppName, $request);
-        $this->userId = $UserId;
-        //print_r("UserId is: " . $UserId . " and userId is: " . $this->userId);
-        $this->init();
-    }
-
-    public function bla()
-    {
-        return new DataResponse('OpenXPort JMAP API for Nextcloud, powered by NGI DAPSI, is enabled.');
-    }
-
-    /**
-     * CAUTION: the @Stuff turns off security checks; for this page no admin is
-     *          required and no CSRF check. If you don't know what CSRF is, read
-     *          it up in the docs or you might create a security hole. This is
-     *          basically the only required method to add this exemption, don't
-     *          add it to any other method if you don't exactly know what it does
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
-    public function index()
-    {
-        return new DataResponse('OpenXPort JMAP API for Nextcloud, powered by NGI DAPSI, is enabled.');
-        // Use TemplateResponse in case we want to have a UI.
-        //return new TemplateResponse('jmap', 'index');
-    }
-
-    /**
-     * CAUTION: the @Stuff turns off security checks; for this page no admin is
-     *          required and no CSRF check. If you don't know what CSRF is, read
-     *          it up in the docs or you might create a security hole. This is
-     *          basically the only required method to add this exemption, don't
-     *          add it to any other method if you don't exactly know what it does
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
-    public function jmap()
-    {
-        $this->init();
-
-        $accessors = array(
+        $this->accessors = array(
             "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess(),
             "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess(),
             "Calendars" => null,
@@ -102,7 +63,7 @@ class JmapController extends ApiController
             "ContactGroups" => null,
         );
 
-        $adapters = array(
+        $this->adapters = array(
             "Contacts" => new \OpenXPort\Adapter\NextcloudVCardAdapter(),
             "AddressBooks" => new \OpenXPort\Adapter\NextcloudAddressbookAdapter(),
             "Calendars" => null,
@@ -115,7 +76,7 @@ class JmapController extends ApiController
             "ContactGroups" => null,
         );
 
-        $mappers = array(
+        $this->mappers = array(
             "Contacts" => new \OpenXPort\Mapper\VCardMapper(),
             "AddressBooks" => new \OpenXPort\Mapper\NextcloudAddressbookMapper(),
             "Calendars" => null,
@@ -127,8 +88,53 @@ class JmapController extends ApiController
             "StorageNodes" => null,
             "ContactGroups" => null,
         );
+    }
 
-        $server = new \OpenXPort\Jmap\Core\Server($accessors, $adapters, $mappers, $this->oxpConfig);
+    public function __construct($AppName, IRequest $request, $UserId)
+    {
+        parent::__construct($AppName, $request);
+        $this->userId = $UserId;
+        //print_r("UserId is: " . $UserId . " and userId is: " . $this->userId);
+        $this->init();
+    }
+
+    /**
+     * CAUTION: the @Stuff turns off security checks; for this page no admin is
+     *          required and no CSRF check. If you don't know what CSRF is, read
+     *          it up in the docs or you might create a security hole. This is
+     *          basically the only required method to add this exemption, don't
+     *          add it to any other method if you don't exactly know what it does
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function session()
+    {
+        $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
+        $server->handleJmapRequest($this->jmapRequest);
+
+        // Currently we use die here, since we need to stop any execution after '$server->listen();'.
+        // That's because we don't have a return statement for this function.
+        // When there is no return statement in PHP (or, equivalently, there's simply 'return;'),
+        // then the function returns null
+        // In our case here when the function returns null, it gets appended right next to the JMAP response,
+        // delivered by '$server->listen();' and we thus get an invalid JSON (due to the appended null after the JSON)
+        die;
+    }
+
+    /**
+     * CAUTION: the @Stuff turns off security checks; for this page no admin is
+     *          required and no CSRF check. If you don't know what CSRF is, read
+     *          it up in the docs or you might create a security hole. This is
+     *          basically the only required method to add this exemption, don't
+     *          add it to any other method if you don't exactly know what it does
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function request()
+    {
+        $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
         $server->handleJmapRequest($this->jmapRequest);
 
         // Currently we use die here, since we need to stop any execution after '$server->listen();'.
