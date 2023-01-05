@@ -90,11 +90,10 @@ class JmapController extends ApiController
         );
     }
 
-    public function __construct($AppName, IRequest $request, $UserId)
+    public function __construct($appName, IRequest $request, $userId)
     {
-        parent::__construct($AppName, $request);
-        $this->userId = $UserId;
-        //print_r("UserId is: " . $UserId . " and userId is: " . $this->userId);
+        parent::__construct($appName, $request);
+        $this->userId = $userId;
         $this->init();
     }
 
