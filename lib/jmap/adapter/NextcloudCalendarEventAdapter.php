@@ -9,12 +9,6 @@ class NextcloudCalendarEventAdapter extends AbstractAdapter
     // This is an iCal event component (and not an entire iCal object)
     private $iCalEvent;
 
-    public function __construct()
-    {
-        // Put the require for the iCalendar lib inside the constructor, so that phpcs does not complain.
-        require(__DIR__ . '/../../../icalendar/zapcallib.php');
-    }
-
     public function getICalEvent()
     {
         return $this->iCalEvent;
@@ -235,7 +229,7 @@ class NextcloudCalendarEventAdapter extends AbstractAdapter
 
         // The library treats commas in RRULE as separator for rules and thus we need to fix this
         // by putting the separated RRULE back together as one whole (and not as separate rules)
-        if (!empty($rRule->getValues()) && count($rRule->getValues()) > 1) {
+        if (!empty($rRuleValues) && is_array($rRuleValues) && count($rRuleValues) > 1) {
             $rRuleValues = implode(",", $rRule->getValues());
         }
 

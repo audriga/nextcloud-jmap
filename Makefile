@@ -39,31 +39,42 @@
 #        "build": "node node_modules/gulp-cli/bin/gulp.js"
 #    },
 
+project := $(OPENXPORT_PROJECT)
+
 app_name=$(notdir $(CURDIR))
 build_tools_directory=$(CURDIR)/build/tools
 source_build_directory=$(CURDIR)/build/artifacts/source
 source_package_name=$(source_build_directory)/$(app_name)
 appstore_build_directory=$(CURDIR)/build/artifacts/appstore
 appstore_package_name=$(appstore_build_directory)/$(app_name)
+nextcloud_test_directory=$(NEXTCLOUD_TEST_DIR)
 npm=$(shell which npm 2> /dev/null)
-composer=$(shell which composer 2> /dev/null)
+composer=$(shell ls $(build_tools_directory)/composer_fresh.phar 2> /dev/null)
+version=$(shell git tag --sort=committerdate | tail -1)
 
-all: build
+all: init
 
+# Initialize project. Run this before any other target.
 # Fetches the PHP and JS dependencies and compiles the JS. If no composer.json
 # is present, the composer step is skipped, if no package.json or js/package.json
 # is present, the npm step is skipped
-.PHONY: build
-build:
-ifneq (,$(wildcard $(CURDIR)/composer.json))
-	make composer
-endif
+.PHONY: init
+init: composer
+	rm $(build_tools_directory)/composer.phar || true
+	ln $(build_tools_directory)/composer_fresh.phar $(build_tools_directory)/composer.phar
+	php $(build_tools_directory)/composer.phar install --prefer-dist --no-dev
 ifneq (,$(wildcard $(CURDIR)/package.json))
 	make npm
 endif
 ifneq (,$(wildcard $(CURDIR)/js/package.json))
 	make npm
 endif
+
+# Update dependencies and make dev tools available for development
+.PHONY: update
+update:
+	git submodule update --init --recursive
+	php $(build_tools_directory)/composer.phar update --prefer-dist
 
 # Installs and updates the composer dependencies. If composer is not installed
 # a copy is fetched from the web
@@ -72,11 +83,8 @@ composer:
 ifeq (, $(composer))
 	@echo "No composer command available, downloading a copy from the web"
 	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | php
-	mv composer.phar $(build_tools_directory)
-	php $(build_tools_directory)/composer.phar install --prefer-dist
-else
-	composer install --prefer-dist
+	./get_composer.sh
+	mv composer.phar $(build_tools_directory)/composer_fresh.phar
 endif
 
 # Installs npm dependencies
@@ -149,7 +157,40 @@ appstore:
 	--exclude="../$(app_name)/.*" \
 	--exclude="../$(app_name)/js/.*" \
 
+# Linting with PHP-CS
+.PHONY: lint
+lint:
+	# Make devtools available again
+	php $(build_tools_directory)/composer.phar install --prefer-dist
+
+	# Lint with CodeSniffer
+	vendor/bin/phpcs lib/
+
+# Requires:
+# * NEXTCLOUD_TEST_DIR - apps/jmap directory of a nextcloud instance. Files will be copied to it.
+# * podman to run tests
+# Example usage: NEXTCLOUD_TEST_DIR=~/ops/containers/nextcloud/custom_apps/jmap make test
 .PHONY: test
 test: composer
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+ifeq (, $(nextcloud_test_directory))
+	@echo "Tests must be run inside Nextcloud. You must specify NEXTCLOUD_TEST_DIR."
+else
+	find . -type f -not -iwholename '*/.git*' -exec cp -ru '{}' '$(nextcloud_test_directory)/{}' ';'
+	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
+	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
+endif
+
+# Build a ZIP for deploying
+.PHONY: zip
+zip:
+	php $(build_tools_directory)/composer.phar install --prefer-dist --no-dev
+	php $(build_tools_directory)/composer.phar archive -f zip --dir=build/archives --file=jmap-nextcloud-$(version)
+# In case of project build: rename and put jmap folder to root level
+ifneq (, $(project))
+	mkdir -p build/tmp/jmap
+	unzip -q build/archives/jmap-nextcloud-$(version).zip -d build/tmp/jmap
+	cd build/tmp && zip -qmr jmap-nextcloud-$(version)-$(project).zip jmap/ && mv jmap-nextcloud-$(version)-$(project).zip ../archives
+endif
+
+.PHONY: fulltest
+fulltest: lint test

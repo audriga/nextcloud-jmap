@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ruleset name="Audriga Standard" namespace="Audriga\CS\Standard">
+    <description>The coding standard for audriga.</description>
+
+    <config name="php_version" value="70033"/>
+    <!-- Include the whole PSR12 standard -->
+    <rule ref="PSR12">
+        <!-- This does not seem to care that we set PHP 7 above -->
+        <exclude name="PSR12.Properties.ConstantVisibility"/>
+    </rule>
+</ruleset>

@@ -1,0 +1,3 @@
+[submodule "icalendar"]
+       path = icalendar
+       url = git@bitbucket.org:audriga/icalendar-php.git
