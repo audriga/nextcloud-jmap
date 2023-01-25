@@ -13,7 +13,7 @@ return array(
     // ********************** //
 
     // Enabled capabilities for this endpoint
-    'capabilities' => array('contacts', 'calendars', 'debug'),
+    'capabilities' => array('jscontact', 'debug', 'calendars'),
 
     // ********************** //
     /// Logging configuration
