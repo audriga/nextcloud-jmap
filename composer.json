@@ -16,7 +16,8 @@
     ],
     "require": {
         "php": ">=5.6.0",
-        "audriga/jmap-openxport": "~1"
+        "audriga/jmap-openxport": "~1",
+        "audriga/jmap-icalendar_vcard": ">=0.0.1"
     },
     "require-dev": {
         "christophwurst/nextcloud_testing": "^0.12.4",
