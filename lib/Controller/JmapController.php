@@ -60,7 +60,7 @@ class JmapController extends ApiController
             "Identities" => null,
             "Filters" => null,
             "StorageNodes" => null,
-            "ContactGroups" => null,
+            "ContactGroups" => null
         );
 
         $this->adapters = array(
@@ -74,6 +74,7 @@ class JmapController extends ApiController
             "Filters" => null,
             "StorageNodes" => null,
             "ContactGroups" => null,
+            "Cards" => new \OpenXPort\Adapter\JSContactVCardAdapter()
         );
 
         $this->mappers = array(
@@ -87,6 +88,7 @@ class JmapController extends ApiController
             "Filters" => null,
             "StorageNodes" => null,
             "ContactGroups" => null,
+            "Cards" => new \OpenXPort\Mapper\JSContactVCardMapper()
         );
     }
 
