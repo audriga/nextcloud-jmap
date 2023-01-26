@@ -43,7 +43,8 @@ class JmapController extends ApiController
             "Identities" => null,
             "Filters" => null,
             "StorageNodes" => null,
-            "ContactGroups" => null
+            "ContactGroups" => null,
+            "Cards" => new \OpenXPort\DataAccess\NextcloudContactDataAccess()
         );
 
         $this->adapters = array(
