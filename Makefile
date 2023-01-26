@@ -99,7 +99,7 @@ endif
 # Removes the appstore build
 .PHONY: clean
 clean:
-	rm -rf ./build
+	rm -rf ./build ./vendor
 
 # Same as clean but also removes dependencies installed by composer, bower and
 # npm
@@ -175,7 +175,8 @@ test: composer
 ifeq (, $(nextcloud_test_directory))
 	@echo "Tests must be run inside Nextcloud. You must specify NEXTCLOUD_TEST_DIR."
 else
-	find . -type f -not -iwholename '*/.git*' -exec cp -ru '{}' '$(nextcloud_test_directory)/{}' ';'
+	rm -rf $(nextcloud_test_directory)/vendor
+	find . -maxdepth 1 -type f,d -not -regex ".\|./.git.*" -exec cp -r '{}' '$(nextcloud_test_directory)/' ';'
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
 endif
