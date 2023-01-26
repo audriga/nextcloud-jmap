@@ -3,7 +3,7 @@
 namespace OCA\JMAP\Tests\Unit\Controller;
 
 use PHPUnit\Framework\TestCase;
-use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\DataDisplayResponse;
 use OCA\JMAP\Controller\JmapController;
 
 class JmapControllerTest extends TestCase
@@ -40,10 +40,10 @@ class JmapControllerTest extends TestCase
         $this->init();
 
         $result = $this->controller->session();
-        $this->assertTrue($result == "");
+        $this->assertTrue($result instanceof DataDisplayResponse);
     }
 
-    public function testCardRequest(): void
+    public function testCardGetRequest(): void
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
@@ -55,6 +55,6 @@ class JmapControllerTest extends TestCase
         );
 
         $result = $this->controller->request($using, $methodCalls);
-        $this->assertTrue($result == "");
+        $this->assertTrue($result instanceof DataDisplayResponse);
     }
 }

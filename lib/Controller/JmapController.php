@@ -3,8 +3,8 @@
 namespace OCA\JMAP\Controller;
 
 use OCP\IRequest;
-use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\ApiController;
+use OCP\AppFramework\Http\DataDisplayResponse;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 
@@ -116,11 +116,12 @@ class JmapController extends ApiController
         $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
         $server->handleJmapRequest($this->jmapRequest);
 
-        // Currently we return an empty string here.
+        // Currently we return an empty DataDisplayResponse here.
         // That's because we use echo for appending the JSON to the output.
         // The result of this function gets appended right next to the JMAP response,
         // delivered by '$server->listen();'
-        return "";
+        // DataDisplayResponse is one of the few that prints nothing when there is no output.
+        return new DataDisplayResponse();
     }
 
     /**
@@ -144,10 +145,11 @@ class JmapController extends ApiController
         $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
         $server->handleJmapRequest($this->jmapRequest);
 
-        // Currently we return an empty string here.
+        // Currently we return an empty DataDisplayResponse here.
         // That's because we use echo for appending the JSON to the output.
         // The result of this function gets appended right next to the JMAP response,
         // delivered by '$server->listen();'
-        return "";
+        // DataDisplayResponse is one of the few that prints nothing when there is no output.
+        return new DataDisplayResponse();
     }
 }
