@@ -23,27 +23,10 @@ class JmapController extends ApiController
 
     private $mappers;
 
+    private $jmapRequest;
+
     private function init()
     {
-        // Print debug output via API on error
-        // NOTE: Do not use on public-facing setups
-        $handler = new \OpenXPort\Jmap\Core\ErrorHandler();
-        $handler->setHandlers();
-
-        // Build config
-        $configDefault = include(__DIR__ . '/../../config/config.default.php');
-        $configFile = __DIR__ . '/../../config/config.php';
-        $this->oxpConfig = $configDefault;
-
-        if (file_exists($configFile)) {
-            $configUser = include($configFile);
-            if (is_array($configUser)) {
-                $this->oxpConfig = array_merge($configDefault, $configUser);
-            }
-        };
-        // Decode JSON post body here in case the debug capability is included
-        $this->jmapRequest = \OpenXPort\Util\HttpUtil::getRequestBody();
-
         // Initialize logging
         \OpenXPort\Util\Logger::init($this->oxpConfig, $this->jmapRequest);
         $logger = \OpenXPort\Util\Logger::getInstance();
@@ -96,7 +79,23 @@ class JmapController extends ApiController
     {
         parent::__construct($appName, $request);
         $this->userId = $userId;
-        $this->init();
+
+        // Print debug output via API on error
+        // NOTE: Do not use on public-facing setups
+        $handler = new \OpenXPort\Jmap\Core\ErrorHandler();
+        $handler->setHandlers();
+
+        // Build config
+        $configDefault = include(__DIR__ . '/../../config/config.default.php');
+        $configFile = __DIR__ . '/../../config/config.php';
+        $this->oxpConfig = $configDefault;
+
+        if (file_exists($configFile)) {
+            $configUser = include($configFile);
+            if (is_array($configUser)) {
+                $this->oxpConfig = array_merge($configDefault, $configUser);
+            }
+        };
     }
 
     /**
@@ -111,16 +110,16 @@ class JmapController extends ApiController
      */
     public function session()
     {
+        $this->init();
+
         $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
         $server->handleJmapRequest($this->jmapRequest);
 
-        // Currently we use die here, since we need to stop any execution after '$server->listen();'.
-        // That's because we don't have a return statement for this function.
-        // When there is no return statement in PHP (or, equivalently, there's simply 'return;'),
-        // then the function returns null
-        // In our case here when the function returns null, it gets appended right next to the JMAP response,
-        // delivered by '$server->listen();' and we thus get an invalid JSON (due to the appended null after the JSON)
-        die;
+        // Currently we return an empty string here.
+        // That's because we use echo for appending the JSON to the output.
+        // The result of this function gets appended right next to the JMAP response,
+        // delivered by '$server->listen();'
+        return "";
     }
 
     /**
@@ -133,17 +132,21 @@ class JmapController extends ApiController
      * @NoAdminRequired
      * @NoCSRFRequired
      */
-    public function request()
+    public function request($using, $methodCalls)
     {
+        $this->jmapRequest = new \OpenXPort\Jmap\Core\Request(
+            (object) array("using" => $using, "methodCalls" => $methodCalls)
+        );
+
+        $this->init();
+
         $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
         $server->handleJmapRequest($this->jmapRequest);
 
-        // Currently we use die here, since we need to stop any execution after '$server->listen();'.
-        // That's because we don't have a return statement for this function.
-        // When there is no return statement in PHP (or, equivalently, there's simply 'return;'),
-        // then the function returns null
-        // In our case here when the function returns null, it gets appended right next to the JMAP response,
-        // delivered by '$server->listen();' and we thus get an invalid JSON (due to the appended null after the JSON)
-        die;
+        // Currently we return an empty string here.
+        // That's because we use echo for appending the JSON to the output.
+        // The result of this function gets appended right next to the JMAP response,
+        // delivered by '$server->listen();'
+        return "";
     }
 }
