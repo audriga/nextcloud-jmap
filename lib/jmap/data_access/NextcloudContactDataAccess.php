@@ -2,34 +2,55 @@
 
 namespace OpenXPort\DataAccess;
 
+use OCA\DAV\CardDAV\CardDavBackend;
+
 class NextcloudContactDataAccess extends AbstractDataAccess
 {
-    public function getAll($accountId = null)
-    {
-        // Obtain a database connection in order to be able to query the DB and read contact data from it
-        $db = \OC::$server->getDatabaseConnection();
+    private $userId;
+    private $backend;
+    private $logger;
 
+    public function __construct(CardDavBackend $backend)
+    {
+        $this->backend = $backend;
+        $this->logger = \OpenXPort\Util\Logger::getInstance();
+    }
+
+    private function getAddressBooks($db)
+    {
+        $this->logger->info("Getting contacts");
         // In order to read the user's contact data, we need the user's UID which luckily is the user's
         // Nextcloud username.
         // We can take that from the Basic Auth credentials, sent to us within the JMAP request.
         // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
-        $userUid = $_SERVER['PHP_AUTH_USER'];
+        $this->userUid = $_SERVER['PHP_AUTH_USER'];
 
         // First read all of the user's own addressbooks' IDs
         $ownAddressbooksSql = 'SELECT id FROM `oc_addressbooks` WHERE `principaluri` = ?';
         // Create the principal URI, required as a SQL parameter, so that we can obtain the user's
         // addressbooks with the help of the user's username that we got from above.
-        $ownAddressbooksQueryParams = array('principals/users/' . $userUid);
+        $ownAddressbooksQueryParams = array('principals/users/' . $this->userUid);
         // Execute the query as a prepared statement (protect against SQL injection)
         $ownAddressbooksResult = $db->executeQuery($ownAddressbooksSql, $ownAddressbooksQueryParams);
         // Collect all the addressbook IDs
         $addressBookIds = $ownAddressbooksResult->fetchAll();
+
         // Since we receive an array of arrays holding the addressbook IDs, we want to restructure
         // it such that we only have one array, containing all IDs. That's why we flatten the result
         // that we received in the foreach below.
         foreach ($addressBookIds as $i => $addressBookId) {
             $addressBookIds[$i] = $addressBookId['id'];
         }
+
+        return $addressBookIds;
+    }
+
+    public function getAll($accountId = null)
+    {
+        // Obtain a database connection in order to be able to query the DB and read contact data from it
+        $db = \OC::$server->getDatabaseConnection();
+
+        $addressBookIds = $this->getAddressBooks($db);
 
         // Currently commented out the reading of shared addressbooks for a given user below, since only own
         // addressbooks of a user should be read by default.
@@ -55,7 +76,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         // shared with the user. This is handy, since we'll need all addressbook IDs below in order to read
         // the actual contacts from the DB that are associated with these addressbooks.
         $addressBookIds = array_merge($addressBookIds, $sharedAddressbookIds);
-        */
+         */
         // === END COMMENTED OUT SHARED ADDRESSBOOKS SECTION ===
 
         // Now we read all contacts from the DB table 'oc_cards'. Here we filter in the SQL query by addressbookid
@@ -90,7 +111,35 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function create($contactsToCreate, $accountId = null)
     {
-        throw new \BadMethodCallException("create not implemented for Card/set.");
+        $this->logger->info("Creating " . sizeof($contactsToCreate) . " contacts for user " . $accountId);
+
+        $contactMap = [];
+
+        foreach ($contactsToCreate as $c) {
+            // $contactToCreate is a vCard that we receive
+            $contactToCreate = reset($c);
+
+            // $creationId is the creation ID that we send within a JMAP /set request
+            // For more info, see the "create" argument for JMAP /set requests here: https://jmap.io/spec-core.html#set
+            $creationId = key($c);
+
+            // In case $contactToCreate is null, we shouldn't perform contact writing, but instead we should
+            // write false as the value for the corresponding $creationId key in $contactMap
+            if (is_null($contactToCreate)) {
+                $contactMap[$creationId] = false;
+            } else {
+                $db = \OC::$server->getDatabaseConnection();
+                // assume that the first address book is the one we want to create contacts in
+                // TODO this assumption might be incorrect
+                $defaultAddressBookId = $this->getAddressBooks($db)[0];
+                $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate);
+                // inspiration from https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L143
+                $this->backend->createCard($defaultAddressBookId, $contactToCreateD->uid . '.vcf', $contactToCreate);
+                $contactMap[$creationId] = true;
+            }
+        }
+
+        return $contactMap;
     }
 
     public function destroy($ids, $accountId = null)

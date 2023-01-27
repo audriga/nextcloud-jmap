@@ -14,10 +14,13 @@ class JmapControllerTest extends TestCase
     private function init(): void
     {
         $request = $this->getMockBuilder('OCP\IRequest')->getMock();
+        $davBackend = $this->getMockBuilder('OCA\DAV\CardDAV\CardDavBackend')->disableOriginalConstructor()->getMock();
+        $davBackend->method('createCard')->willReturn('bla');
 
         $this->controller = new JmapController(
             'jmap',
             $request,
+            $davBackend,
             $this->userId
         );
     }
@@ -65,13 +68,13 @@ class JmapControllerTest extends TestCase
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
-        $create = '{"asd": {"@type": "Card", "@version": "1.0", "fullName": "Testi"}}';
-        $methodCalls = array(
-            array("Card/set", array(
+        $create = ["asd" => ["@type" => "Card", "@version" => "1.0", "fullName" => "Testi"]];
+        $methodCalls = [
+            ["Card/set", [
                 "accountId" => "john",
                 "create" => $create
-            ), "0")
-        );
+            ], "0"]
+        ];
 
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);

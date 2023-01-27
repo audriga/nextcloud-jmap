@@ -7,6 +7,7 @@ use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
+use OCA\DAV\CardDAV\CardDavBackend;
 
 class JmapController extends ApiController
 {
@@ -34,7 +35,7 @@ class JmapController extends ApiController
         $logger->notice("Running PHP v" . phpversion() . ", TODO v NEXTCLOUD, Plugin v" . $this->OXP_VERSION);
 
         $this->accessors = array(
-            "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess(),
+            "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend),
             "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess(),
             "Calendars" => null,
             "CalendarEvents" => new \OpenXPort\DataAccess\NextcloudCalendarEventDataAccess(),
@@ -44,7 +45,7 @@ class JmapController extends ApiController
             "Filters" => null,
             "StorageNodes" => null,
             "ContactGroups" => null,
-            "Cards" => new \OpenXPort\DataAccess\NextcloudContactDataAccess()
+            "Cards" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend)
         );
 
         $this->adapters = array(
@@ -76,7 +77,7 @@ class JmapController extends ApiController
         );
     }
 
-    public function __construct($appName, IRequest $request, $userId)
+    public function __construct($appName, IRequest $request, CardDavBackend $davBackend, $userId)
     {
         parent::__construct($appName, $request);
         $this->userId = $userId;
@@ -97,6 +98,9 @@ class JmapController extends ApiController
                 $this->oxpConfig = array_merge($configDefault, $configUser);
             }
         };
+
+        $this->manager = $contactsManager;
+        $this->davBackend = $davBackend;
     }
 
     /**
@@ -136,9 +140,11 @@ class JmapController extends ApiController
      */
     public function request($using, $methodCalls)
     {
-        $this->jmapRequest = new \OpenXPort\Jmap\Core\Request(
-            (object) array("using" => $using, "methodCalls" => $methodCalls)
-        );
+        // Nextcloud gives us a nice array. However, our code assumes stdClass -> convert it!
+        // This is not so nice
+        $requestInput = json_decode(json_encode(array("using" => $using, "methodCalls" => $methodCalls)));
+
+        $this->jmapRequest = new \OpenXPort\Jmap\Core\Request($requestInput);
 
         $this->init();
 

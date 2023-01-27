@@ -30,6 +30,41 @@ class Application extends App implements IBootstrap
 
     public function boot(IBootContext $context): void
     {
-        // No boot logic for now ...
+        $context->injectFn([$this, 'registerContactsManager']);
+    }
+
+    public function registerContactsManager(IContactsManager $cm, IAppContainer $container): void
+    {
+        $cm->register(function () use ($container, $cm): void {
+            $user = \OC::$server->getUserSession()->getUser();
+            if (!is_null($user)) {
+                $this->setupContactsProvider($cm, $container, $user->getUID());
+            } else {
+                // This is prbably the admin case??
+                // TODO verify that
+                $this->setupSystemContactsProvider($cm, $container);
+            }
+        });
+    }
+
+    private function setupContactsProvider(
+        IContactsManager $contactsManager,
+        IAppContainer $container,
+        string $userID
+    ): void {
+        /** @var ContactsManager $cm */
+        $cm = $container->query(ContactsManager::class);
+        $urlGenerator = $container->getServer()->getURLGenerator();
+        $cm->setupContactsProvider($contactsManager, $userID, $urlGenerator);
+    }
+
+    private function setupSystemContactsProvider(
+        IContactsManager $contactsManager,
+        IAppContainer $container
+    ): void {
+        /** @var ContactsManager $cm */
+        $cm = $container->query(ContactsManager::class);
+        $urlGenerator = $container->getServer()->getURLGenerator();
+        $cm->setupSystemContactsProvider($contactsManager, $urlGenerator);
     }
 }
