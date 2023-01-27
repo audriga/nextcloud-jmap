@@ -85,17 +85,21 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function get($ids, $accountId = null)
     {
+        throw new \BadMethodCallException("getting contacts by ID not implemented for Card/get.");
     }
 
     public function create($contactsToCreate, $accountId = null)
     {
+        throw new \BadMethodCallException("create not implemented for Card/set.");
     }
 
     public function destroy($ids, $accountId = null)
     {
+        throw new \BadMethodCallException("destory not implemented for Card/set.");
     }
 
     public function query($accountId, $filter = null)
     {
+        throw new \BadMethodCallException("Card/query not implemented.");
     }
 }

@@ -57,4 +57,23 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
     }
+
+    public function testCardSetRequest(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = "POST";
+
+        $this->init();
+
+        $using = array("https://www.audriga.eu/jmap/jscontact/");
+        $create = '{"asd": {"@type": "Card", "@version": "1.0", "fullName": "Testi"}}';
+        $methodCalls = array(
+            array("Card/set", array(
+                "accountId" => "john",
+                "create" => $create
+            ), "0")
+        );
+
+        $result = $this->controller->request($using, $methodCalls);
+        $this->assertTrue($result instanceof DataDisplayResponse);
+    }
 }
