@@ -99,7 +99,6 @@ class JmapController extends ApiController
             }
         };
 
-        $this->manager = $contactsManager;
         $this->davBackend = $davBackend;
     }
 
