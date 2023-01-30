@@ -61,7 +61,7 @@ class JmapControllerTest extends TestCase
         $this->assertTrue($result instanceof DataDisplayResponse);
     }
 
-    public function testCardSetRequest(): void
+    public function testCardSetCreateRequest(): void
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
@@ -73,6 +73,25 @@ class JmapControllerTest extends TestCase
             ["Card/set", [
                 "accountId" => "john",
                 "create" => $create
+            ], "0"]
+        ];
+
+        $result = $this->controller->request($using, $methodCalls);
+        $this->assertTrue($result instanceof DataDisplayResponse);
+    }
+
+    public function testCardSetDestroyRequest(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = "POST";
+
+        $this->init();
+
+        $using = array("https://www.audriga.eu/jmap/jscontact/");
+        $destroy = ["asd_OpenXPort_lol"];
+        $methodCalls = [
+            ["Card/set", [
+                "accountId" => "john",
+                "destroy" => $destroy
             ], "0"]
         ];
 
