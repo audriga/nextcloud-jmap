@@ -87,7 +87,7 @@ class JmapControllerTest extends TestCase
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
-        $destroy = ["asd_OpenXPort_lol"];
+        $destroy = ["1#lol"];
         $methodCalls = [
             ["Card/set", [
                 "accountId" => "john",

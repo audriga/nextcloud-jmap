@@ -98,8 +98,12 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         // and the respective contact's vCard representation as a value.
         $res = [];
         foreach ($contacts as $contact) {
-            // We return URIs made of addressBookId_OpenXPort_contactUri as ID. See Contact/set.
-            $id = $contact['addressbookid'] . "_OpenXPort_" . $contact['uri'];
+            // We use the etag cache key as IDs. Inspiration from
+            //  https://github.com/nextcloud/server/blob/master/apps/dav/lib/CardDAV/CardDavBackend.php#L705
+            $addressBookId = $contact['addressbookid'];
+            $cardUri = $contact['uri'];
+            $id = "$addressBookId#$cardUri";
+
             $res[$id] = $contact['carddata'];
         }
 
@@ -141,9 +145,9 @@ class NextcloudContactDataAccess extends AbstractDataAccess
                 // https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L234
                 $uri = $contactToCreateD->uid . '.vcf';
                 $this->backend->createCard($defaultAddressBookId, $uri, $contactToCreate);
-                // CardDAV bakend does not expose us internal contact ids but rather URIs that are unique in an
-                // addressbook only. So we return URIs made of addressBookId_OpenXPort_contactUri
-                $contactMap[$creationId] = $defaultAddressBookId . "_OpenXPort_" . $uri;
+                // We use the etag cache key as IDs. Inspiration from
+                //  https://github.com/nextcloud/server/blob/master/apps/dav/lib/CardDAV/CardDavBackend.php#L705
+                $contactMap[$creationId] = "$defaultAddressBookId#$uri";
             }
         }
 
@@ -157,10 +161,10 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
         foreach ($ids as $id) {
             // We return URIs made of addressBookId_OpenXPort_contactUri as ID. See Contact/set.
-            if (!mb_strpos($id, "_OpenXPort_")) {
-                throw new \InvalidArgumentException("Invalid ID. It does not contain '_OpenXPort_: " . $id);
+            if (!mb_strpos($id, "#")) {
+                throw new \InvalidArgumentException("Invalid ID. It does not contain '#': " . $id);
             }
-            list($addressBookId, $uri) = explode("_OpenXPort_", $id);
+            list($addressBookId, $uri) = explode("#", $id);
             $contactMap[$id] = $this->backend->deleteCard($addressBookId, $uri);
         }
 
