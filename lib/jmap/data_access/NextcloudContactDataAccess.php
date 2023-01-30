@@ -16,7 +16,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         $this->logger = \OpenXPort\Util\Logger::getInstance();
     }
 
-    private function getAddressBooks($db)
+    private function getAddressBooks()
     {
         // In order to read the user's contact data, we need the user's UID which luckily is the user's
         // Nextcloud username.
@@ -24,21 +24,14 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
         $this->userUid = $_SERVER['PHP_AUTH_USER'];
 
-        // First read all of the user's own addressbooks' IDs
-        $ownAddressbooksSql = 'SELECT id FROM `oc_addressbooks` WHERE `principaluri` = ?';
-        // Create the principal URI, required as a SQL parameter, so that we can obtain the user's
-        // addressbooks with the help of the user's username that we got from above.
-        $ownAddressbooksQueryParams = array('principals/users/' . $this->userUid);
-        // Execute the query as a prepared statement (protect against SQL injection)
-        $ownAddressbooksResult = $db->executeQuery($ownAddressbooksSql, $ownAddressbooksQueryParams);
-        // Collect all the addressbook IDs
-        $addressBookIds = $ownAddressbooksResult->fetchAll();
+        $addressBooks = $this->backend->getUsersOwnAddressBooks('principals/users/' . $this->userUid);
 
         // Since we receive an array of arrays holding the addressbook IDs, we want to restructure
         // it such that we only have one array, containing all IDs. That's why we flatten the result
         // that we received in the foreach below.
-        foreach ($addressBookIds as $i => $addressBookId) {
-            $addressBookIds[$i] = $addressBookId['id'];
+        $addressBookIds = [];
+        foreach ($addressBooks as $i => $addressBook) {
+            $addressBookIds[$i] = $addressBook['id'];
         }
 
         return $addressBookIds;
@@ -47,10 +40,10 @@ class NextcloudContactDataAccess extends AbstractDataAccess
     public function getAll($accountId = null)
     {
         $this->logger->info("Getting contacts");
+        $addressBookIds = $this->getAddressBooks();
+
         // Obtain a database connection in order to be able to query the DB and read contact data from it
         $db = \OC::$server->getDatabaseConnection();
-
-        $addressBookIds = $this->getAddressBooks($db);
 
         // Currently commented out the reading of shared addressbooks for a given user below, since only own
         // addressbooks of a user should be read by default.
@@ -134,11 +127,10 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             if (is_null($contactToCreate)) {
                 $contactMap[$creationId] = false;
             } else {
-                $db = \OC::$server->getDatabaseConnection();
                 // assume that the first address book is the one we want to create contacts in
                 // TODO this assumption might be incorrect
                 // TODO use addressBookId from contact in request
-                $defaultAddressBookId = $this->getAddressBooks($db)[0];
+                $defaultAddressBookId = $this->getAddressBooks()[0];
                 $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate);
                 // inspiration from https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L143
                 // TODO this might create a URI that already exists. See
