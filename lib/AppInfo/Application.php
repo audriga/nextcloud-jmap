@@ -30,6 +30,6 @@ class Application extends App implements IBootstrap
 
     public function boot(IBootContext $context): void
     {
-        // No boot logic for now ...
+        // No boot logic for now
     }
 }
