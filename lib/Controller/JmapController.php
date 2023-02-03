@@ -12,6 +12,7 @@ use OCP\IUserManager;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 use OCA\DAV\CardDAV\CardDavBackend;
+use OCA\DAV\CalDAV\CalDavBackend;
 
 class JmapController extends ApiController
 {
@@ -32,7 +33,9 @@ class JmapController extends ApiController
     /** @var IGroupManager|Manager */
     private $groupManager;
     /** @var CardDavBackend */
-    private $davBackend;
+    private $cardDavBackend;
+    /** @var CalDavBackend */
+    private $calDavBackend;
 
     private function init()
     {
@@ -51,17 +54,17 @@ class JmapController extends ApiController
         }
 
         $accessors = array(
-            "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend),
-            "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess($this->davBackend),
+            "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->cardDavBackend),
+            "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess($this->cardDavBackend),
             "Calendars" => null,
-            "CalendarEvents" => new \OpenXPort\DataAccess\NextcloudCalendarEventDataAccess(),
+            "CalendarEvents" => new \OpenXPort\DataAccess\NextcloudCalendarEventDataAccess($this->calDavBackend),
             "Tasks" => null,
             "Notes" => null,
             "Identities" => null,
             "Filters" => null,
             "StorageNodes" => null,
             "ContactGroups" => null,
-            "Cards" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend)
+            "Cards" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->cardDavBackend)
         );
 
         $adapters = array(
@@ -116,7 +119,8 @@ class JmapController extends ApiController
         IUserManager $userManager,
         IGroupManager $groupManager,
         IUserSession $userSession,
-        CardDavBackend $davBackend,
+        CardDavBackend $cardDavBackend,
+        CalDavBackend $calDavBackend,
         $userId
     ) {
         parent::__construct($appName, $request);
@@ -142,7 +146,8 @@ class JmapController extends ApiController
         $this->userSession = $userSession;
         $this->userManager = $userManager;
         $this->groupManager = $groupManager;
-        $this->davBackend = $davBackend;
+        $this->cardDavBackend = $cardDavBackend;
+	$this->calDavBackend = $calDavBackend;
     }
 
     /**
