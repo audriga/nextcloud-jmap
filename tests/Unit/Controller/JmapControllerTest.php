@@ -59,6 +59,13 @@ class JmapControllerTest extends TestCase
 
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
+
+        $output = $this->getActualOutput();
+        $out_json = json_decode($output, true);
+        $this->assertArrayHasKey("methodResponses", $out_json);
+        $this->assertIsArray($out_json["methodResponses"]);
+        $this->assertIsArray($out_json["methodResponses"][0]);
+        $this->assertEquals("Card/get", $out_json["methodResponses"][0][0]);
     }
 
     public function testCardSetCreateRequest(): void
