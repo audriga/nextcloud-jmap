@@ -19,7 +19,7 @@
     <navigations>
         <navigation>
             <name>JMAP</name>
-            <route>jmap.page.index</route>
+            <route>jmap.jmap.session</route>
         </navigation>
     </navigations>
 </info>
