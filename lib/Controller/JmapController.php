@@ -36,7 +36,7 @@ class JmapController extends ApiController
 
         $this->accessors = array(
             "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend),
-            "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess(),
+            "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess($this->davBackend),
             "Calendars" => null,
             "CalendarEvents" => new \OpenXPort\DataAccess\NextcloudCalendarEventDataAccess(),
             "Tasks" => null,
