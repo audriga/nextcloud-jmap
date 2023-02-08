@@ -6,7 +6,7 @@ use OCA\DAV\CardDAV\CardDavBackend;
 
 class NextcloudContactDataAccess extends AbstractDataAccess
 {
-    private $userId;
+    private $principalUri;
     private $backend;
     private $logger;
 
@@ -14,22 +14,29 @@ class NextcloudContactDataAccess extends AbstractDataAccess
     {
         $this->backend = $backend;
         $this->logger = \OpenXPort\Util\Logger::getInstance();
+
+        // In order to modify the user's contact data, we need the user's UID which luckily is the user's
+        // Nextcloud username.
+        // We can take that from the Basic Auth credentials, sent to us within the JMAP request.
+        // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
+        $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
     }
 
     private function getAddressBooks()
     {
-        // In order to read the user's contact data, we need the user's UID which luckily is the user's
-        // Nextcloud username.
-        // We can take that from the Basic Auth credentials, sent to us within the JMAP request.
-        // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
-        $this->userUid = $_SERVER['PHP_AUTH_USER'];
-
-        $addressBooks = $this->backend->getUsersOwnAddressBooks('principals/users/' . $this->userUid);
+        $addressBooks = $this->backend->getUsersOwnAddressBooks($this->principalUri);
 
         // Since we receive an array of arrays holding the addressbook IDs, we want to restructure
         // it such that we only have one array, containing all IDs. That's why we flatten the result
         // that we received in the foreach below.
         $addressBookIds = [];
+
+        if (is_null($addressBooks)) {
+            // TODO we might want to handle this in the future
+            $this->logger->error("User has no address books " . $this->principalUri);
+            return $addressBookIds;
+        }
+
         foreach ($addressBooks as $i => $addressBook) {
             $addressBookIds[$i] = $addressBook['id'];
         }
@@ -110,7 +117,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function create($contactsToCreate, $accountId = null)
     {
-        $this->logger->info("Creating " . sizeof($contactsToCreate) . " contacts for user " . $accountId);
+        $this->logger->info("Creating " . sizeof($contactsToCreate) . " contacts for user " . $this->principalUri);
 
         $contactMap = [];
 
@@ -148,7 +155,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function destroy($ids, $accountId = null)
     {
-        $this->logger->info("Destroying " . sizeof($ids) . " contacts for user " . $accountId);
+        $this->logger->info("Destroying " . sizeof($ids) . " contacts for user " . $this->principalUri);
         $contactMap = [];
 
         foreach ($ids as $id) {
