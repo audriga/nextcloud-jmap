@@ -40,7 +40,7 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
      * @param array booksToCreate Array of Id[bookToCreate]
      *   Id is the creation ID that we send within a JMAP /set request
      *     for more info, see the "create" argument for JMAP /set requests here: https://jmap.io/spec-core.html#set
-     *   bookToCreate MUST have a 'uid' key (name of address book) and can have two other keys:
+     *   bookToCreate MUST have a 'uri' key (name of address book) and can have two other keys:
      *   * {DAV:}displayname
      *   * {urn:ietf:params:xml:ns:carddav}addressbook-description
      */
@@ -49,7 +49,7 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
         $bookMap = [];
 
         if (is_null($booksToCreate)) {
-            $this->logger->warning("AddressBook/set did not contain any data for user " . $accountId);
+            $this->logger->warning("AddressBook/set did not contain any data for creating for user " . $accountId);
             return $bookMap;
         }
         $this->logger->info("Creating " . count($booksToCreate) . " address books for user " . $accountId);

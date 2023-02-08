@@ -137,7 +137,11 @@ class NextcloudContactDataAccess extends AbstractDataAccess
                 // assume that the first address book is the one we want to create contacts in
                 // TODO this assumption might be incorrect
                 // TODO use addressBookId from contact in request
-                $defaultAddressBookId = $this->getAddressBooks()[0];
+                $addressBooks = $this->getAddressBooks();
+                if (empty($addressBooks)) {
+                    throw new \Exception("User has no address books.");
+                }
+                $defaultAddressBookId = $addressBooks[0];
                 $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate);
                 // inspiration from https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L143
                 // TODO this might create a URI that already exists. See
