@@ -80,7 +80,18 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
 
     public function destroy($ids, $accountId = null)
     {
-        // TODO: Implement me
+        $bookMap = [];
+        if (is_null($ids)) {
+            $this->logger->warning("AddressBook/set did not contain any data for destroying for user " . $accountId);
+            return $bookMap;
+        }
+        $this->logger->info("Destroying " . sizeof($ids) . " address books for user " . $this->principalUri);
+
+        foreach ($ids as $id) {
+            $bookMap[$id] = $this->backend->deleteAddressBook($id);
+        }
+
+        return $bookMap;
     }
 
     public function query($accountId, $filter = null)
