@@ -105,4 +105,26 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
     }
+
+    public function testAddressBookGetRequest(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = "POST";
+
+        $this->init();
+
+        $using = array("https://www.audriga.eu/jmap/jscontact/");
+        $methodCalls = array(
+            array("AddressBook/get", array( "accountId" => "john"), "0")
+        );
+
+        $result = $this->controller->request($using, $methodCalls);
+        $this->assertTrue($result instanceof DataDisplayResponse);
+
+        $output = $this->getActualOutput();
+        $out_json = json_decode($output, true);
+        $this->assertArrayHasKey("methodResponses", $out_json);
+        $this->assertIsArray($out_json["methodResponses"]);
+        $this->assertIsArray($out_json["methodResponses"][0]);
+        $this->assertEquals("AddressBook/get", $out_json["methodResponses"][0][0]);
+    }
 }
