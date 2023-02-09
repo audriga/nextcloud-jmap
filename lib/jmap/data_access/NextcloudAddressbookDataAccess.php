@@ -49,10 +49,10 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
         $bookMap = [];
 
         if (is_null($booksToCreate)) {
-            $this->logger->warning("AddressBook/set did not contain any data for creating for user " . $accountId);
+            $this->logger->warning("AddressBook/set did not contain any data for creating for user " . $this->principalUri);
             return $bookMap;
         }
-        $this->logger->info("Creating " . count($booksToCreate) . " address books for user " . $accountId);
+        $this->logger->info("Creating " . count($booksToCreate) . " address books for user " . $this->principalUri);
 
 
         foreach ($booksToCreate as $c) {
@@ -82,7 +82,7 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
     {
         $bookMap = [];
         if (is_null($ids)) {
-            $this->logger->warning("AddressBook/set did not contain any data for destroying for user " . $accountId);
+            $this->logger->warning("AddressBook/set did not contain any data for destroying for user " . $this->principalUri);
             return $bookMap;
         }
         $this->logger->info("Destroying " . sizeof($ids) . " address books for user " . $this->principalUri);
