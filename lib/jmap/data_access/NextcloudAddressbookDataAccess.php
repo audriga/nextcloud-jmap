@@ -49,7 +49,9 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
         $bookMap = [];
 
         if (is_null($booksToCreate)) {
-            $this->logger->warning("AddressBook/set did not contain any data for creating for user " . $this->principalUri);
+            $this->logger->warning(
+                "AddressBook/set did not contain any data for creating for user " . $this->principalUri
+            );
             return $bookMap;
         }
         $this->logger->info("Creating " . count($booksToCreate) . " address books for user " . $this->principalUri);
@@ -71,7 +73,7 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
             } else {
                 $name = $bookToCreate['uri'];
                 unset($bookToCreate['uri']);
-                $bookMap[$creationId] = $this->backend->createAddressBook($this->principalUri, $uri, $bookToCreate);
+                $bookMap[$creationId] = $this->backend->createAddressBook($this->principalUri, $name, $bookToCreate);
             }
         }
 
@@ -82,13 +84,21 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
     {
         $bookMap = [];
         if (is_null($ids)) {
-            $this->logger->warning("AddressBook/set did not contain any data for destroying for user " . $this->principalUri);
+            $this->logger->warning(
+                "AddressBook/set did not contain any data for destroying for user " . $this->principalUri
+            );
             return $bookMap;
         }
         $this->logger->info("Destroying " . sizeof($ids) . " address books for user " . $this->principalUri);
 
         foreach ($ids as $id) {
-            $bookMap[$id] = $this->backend->deleteAddressBook($id);
+            if (is_null($this->backend->getAddressBookById($id))) {
+                $bookMap[$id] = 0;
+                $this->logger->error("Address Book with the following ID does not exist: " . $id);
+            } else {
+                $this->backend->deleteAddressBook($id);
+                $bookMap[$id] = 1;
+            }
         }
 
         return $bookMap;
