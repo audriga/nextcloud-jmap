@@ -165,7 +165,9 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         foreach ($ids as $id) {
             // We return URIs made of addressBookId_OpenXPort_contactUri as ID. See Contact/set.
             if (!mb_strpos($id, "#")) {
-                throw new \InvalidArgumentException("Invalid ID. It does not contain '#': " . $id);
+                $this->logger->error("Invalid ID. It does not contain '#': " . $id);
+                $contactMap[$id] = 0;
+                continue;
             }
             list($addressBookId, $uri) = explode("#", $id);
             $contactMap[$id] = $this->backend->deleteCard($addressBookId, $uri);
