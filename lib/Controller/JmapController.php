@@ -49,7 +49,7 @@ class JmapController extends ApiController
         );
 
         $this->adapters = array(
-            "Contacts" => new \OpenXPort\Adapter\NextcloudVCardAdapter(),
+            "Contacts" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter(),
             "AddressBooks" => new \OpenXPort\Adapter\NextcloudAddressbookAdapter(),
             "Calendars" => null,
             "CalendarEvents" => new \OpenXPort\Adapter\NextcloudCalendarEventAdapter(),
@@ -59,7 +59,7 @@ class JmapController extends ApiController
             "Filters" => null,
             "StorageNodes" => null,
             "ContactGroups" => null,
-            "Cards" => new \OpenXPort\Adapter\JSContactVCardAdapter()
+            "Cards" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter()
         );
 
         $this->mappers = array(
