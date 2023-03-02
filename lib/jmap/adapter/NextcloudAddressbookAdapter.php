@@ -2,13 +2,23 @@
 
 namespace OpenXPort\Adapter;
 
+use OCA\DAV\CardDAV\Plugin as CardDAVPlugin;
+
 class NextcloudAddressbookAdapter extends AbstractAdapter
 {
     private $addressbook;
 
-    public function getAddressbook()
+    /*
+     * CardDavBackend expects an array of propeties instead of an actual AddressBook array for creating new a address
+     * book.
+     */
+    public function getAddressbookAsProperties()
     {
-        return $this->addressbook;
+        return array_filter([
+            'uri' => $this->addressbook['uri'],
+            // TODO '{DAV:}displayname' => $this->addressbook['uri'],
+            '{' . CardDAVPlugin::NS_CARDDAV . '}addressbook-description' => $this->addressbook['description'] ?? null,
+        ]);
     }
 
     public function setAddressbook($addressbook)
@@ -26,8 +36,18 @@ class NextcloudAddressbookAdapter extends AbstractAdapter
         return $this->addressbook['uri'];
     }
 
+    public function setName($name)
+    {
+        $this->addressbook['uri'] = $name;
+    }
+
     public function getDescription()
     {
         return $this->addressbook['description'];
+    }
+
+    public function setDescription($desc)
+    {
+        $this->addressbook['description'] = $desc;
     }
 }

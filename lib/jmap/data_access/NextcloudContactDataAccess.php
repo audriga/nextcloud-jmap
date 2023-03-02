@@ -6,7 +6,7 @@ use OCA\DAV\CardDAV\CardDavBackend;
 
 class NextcloudContactDataAccess extends AbstractDataAccess
 {
-    private $userId;
+    private $principalUri;
     private $backend;
     private $logger;
 
@@ -14,33 +14,42 @@ class NextcloudContactDataAccess extends AbstractDataAccess
     {
         $this->backend = $backend;
         $this->logger = \OpenXPort\Util\Logger::getInstance();
+
+        // In order to modify the user's contact data, we need the user's UID which luckily is the user's
+        // Nextcloud username.
+        // We can take that from the Basic Auth credentials, sent to us within the JMAP request.
+        // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
+        $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
     }
 
     private function getAddressBooks()
     {
-        // In order to read the user's contact data, we need the user's UID which luckily is the user's
-        // Nextcloud username.
-        // We can take that from the Basic Auth credentials, sent to us within the JMAP request.
-        // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
-        $this->userUid = $_SERVER['PHP_AUTH_USER'];
-
-        $addressBooks = $this->backend->getUsersOwnAddressBooks('principals/users/' . $this->userUid);
+        $addressBooks = $this->backend->getUsersOwnAddressBooks($this->principalUri);
 
         // Since we receive an array of arrays holding the addressbook IDs, we want to restructure
         // it such that we only have one array, containing all IDs. That's why we flatten the result
         // that we received in the foreach below.
-        $addressBookIds = [];
-        foreach ($addressBooks as $i => $addressBook) {
-            $addressBookIds[$i] = $addressBook['id'];
+
+        if (is_null($addressBooks)) {
+            // TODO we might want to handle this in the future
+            $this->logger->error("User has no address books " . $this->principalUri);
+            return null;
         }
 
-        return $addressBookIds;
+        return $addressBooks;
     }
 
     public function getAll($accountId = null)
     {
         $this->logger->info("Getting contacts");
-        $addressBookIds = $this->getAddressBooks();
+
+        $addressBooks = $this->getAddressBooks();
+
+        $addressBookIds = [];
+
+        foreach ($addressBooks as $i => $addressBook) {
+            $addressBookIds[$i] = $addressBook['id'];
+        }
 
         // Obtain a database connection in order to be able to query the DB and read contact data from it
         $db = \OC::$server->getDatabaseConnection();
@@ -97,7 +106,12 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             $cardUri = $contact['uri'];
             $id = "$addressBookId#$cardUri";
 
-            $res[$id] = $contact['carddata'];
+            $res[$id] = [
+                "vCard" => $contact['carddata'],
+                "oxpProperties" => [
+                    "addressBookId" => $addressBookId
+                ]
+            ];
         }
 
         return $res;
@@ -110,7 +124,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function create($contactsToCreate, $accountId = null)
     {
-        $this->logger->info("Creating " . sizeof($contactsToCreate) . " contacts for user " . $accountId);
+        $this->logger->info("Creating " . sizeof($contactsToCreate) . " contacts for user " . $this->principalUri);
 
         $contactMap = [];
 
@@ -128,18 +142,46 @@ class NextcloudContactDataAccess extends AbstractDataAccess
                 $contactMap[$creationId] = false;
             } else {
                 // assume that the first address book is the one we want to create contacts in
-                // TODO this assumption might be incorrect
-                // TODO use addressBookId from contact in request
-                $defaultAddressBookId = $this->getAddressBooks()[0];
-                $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate);
+                $addressBooks = $this->getAddressBooks();
+                if (empty($addressBooks)) {
+                    throw new \Exception("User has no address books.");
+                }
+
+                // Write into default address book in case no ID was given
+                $addresBookId = null;
+                if (
+                    !array_key_exists('oxpProperties', $contactToCreate) ||
+                    !array_key_exists('addressBookId', $contactToCreate['oxpProperties']) ||
+                    empty($contactToCreate['oxpProperties']['addressBookId'])
+                ) {
+                    $this->logger->warning("No addressBookId was set. Trying to write into default address book.");
+                    $defaultBookId = null;
+
+                    foreach ($addressBooks as $book) {
+                        if ($book['uri'] == CardDavBackend::PERSONAL_ADDRESSBOOK_URI) {
+                            $defaultBookId = $book['id'];
+                        }
+                    }
+
+                    if (is_null($defaultBookId)) {
+                        $this->logger->warning("No default address book found. Falling back to the first in the list.");
+                        $addressBookId = $addressBooks[0]['id'];
+                    } else {
+                        $addressBookId = $defaultBookId;
+                    }
+                } else {
+                    $addressBookId = $contactToCreate['oxpProperties']['addressBookId'];
+                }
+
+                $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate["vCard"]);
                 // inspiration from https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L143
                 // TODO this might create a URI that already exists. See
                 // https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L234
                 $uri = $contactToCreateD->uid . '.vcf';
-                $this->backend->createCard($defaultAddressBookId, $uri, $contactToCreate);
+                $this->backend->createCard($addressBookId, $uri, $contactToCreate["vCard"]);
                 // We use the etag cache key as IDs. Inspiration from
                 //  https://github.com/nextcloud/server/blob/master/apps/dav/lib/CardDAV/CardDavBackend.php#L705
-                $contactMap[$creationId] = "$defaultAddressBookId#$uri";
+                $contactMap[$creationId] = "$addressBookId#$uri";
             }
         }
 
@@ -148,13 +190,15 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function destroy($ids, $accountId = null)
     {
-        $this->logger->info("Destroying " . sizeof($ids) . " contacts for user " . $accountId);
+        $this->logger->info("Destroying " . sizeof($ids) . " contacts for user " . $this->principalUri);
         $contactMap = [];
 
         foreach ($ids as $id) {
             // We return URIs made of addressBookId_OpenXPort_contactUri as ID. See Contact/set.
             if (!mb_strpos($id, "#")) {
-                throw new \InvalidArgumentException("Invalid ID. It does not contain '#': " . $id);
+                $this->logger->error("Invalid ID. It does not contain '#': " . $id);
+                $contactMap[$id] = 0;
+                continue;
             }
             list($addressBookId, $uri) = explode("#", $id);
             $contactMap[$id] = $this->backend->deleteCard($addressBookId, $uri);

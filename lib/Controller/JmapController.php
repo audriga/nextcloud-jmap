@@ -36,7 +36,7 @@ class JmapController extends ApiController
 
         $this->accessors = array(
             "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend),
-            "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess(),
+            "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess($this->davBackend),
             "Calendars" => null,
             "CalendarEvents" => new \OpenXPort\DataAccess\NextcloudCalendarEventDataAccess(),
             "Tasks" => null,
@@ -49,7 +49,7 @@ class JmapController extends ApiController
         );
 
         $this->adapters = array(
-            "Contacts" => new \OpenXPort\Adapter\NextcloudVCardAdapter(),
+            "Contacts" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter(),
             "AddressBooks" => new \OpenXPort\Adapter\NextcloudAddressbookAdapter(),
             "Calendars" => null,
             "CalendarEvents" => new \OpenXPort\Adapter\NextcloudCalendarEventAdapter(),
@@ -59,7 +59,7 @@ class JmapController extends ApiController
             "Filters" => null,
             "StorageNodes" => null,
             "ContactGroups" => null,
-            "Cards" => new \OpenXPort\Adapter\JSContactVCardAdapter()
+            "Cards" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter()
         );
 
         $this->mappers = array(

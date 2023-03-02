@@ -8,7 +8,17 @@ class NextcloudAddressbookMapper extends AbstractMapper
 {
     public function mapFromJmap($jmapData, $adapter)
     {
-        // TODO: Implement me
+        $map = [];
+
+        foreach ($jmapData as $id => $book) {
+            $adapter->setAddressbook([]);
+            $adapter->setName($book->name);
+            $adapter->setDescription($book->description);
+
+            array_push($map, array($id => $adapter->getAddressbookAsProperties()));
+        }
+
+        return $map;
     }
 
     public function mapToJmap($data, $adapter)
