@@ -5,6 +5,7 @@ namespace OCA\JMAP\Controller;
 use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http\DataDisplayResponse;
+use OCP\IUserSession;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 use OCA\DAV\CardDAV\CardDavBackend;
@@ -18,13 +19,15 @@ class JmapController extends ApiController
 
     private $oxpConfig;
 
-    private $accessors;
-
-    private $adapters;
-
     private $mappers;
 
     private $jmapRequest;
+
+    /** @var IUserSession */
+    private $userSession;
+
+    /** @var CardDavBackend */
+    private $davBackend;
 
     private function init()
     {
@@ -34,7 +37,7 @@ class JmapController extends ApiController
 
         $logger->notice("Running PHP v" . phpversion() . ", TODO v NEXTCLOUD, Plugin v" . $this->OXP_VERSION);
 
-        $this->accessors = array(
+        $accessors = array(
             "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend),
             "AddressBooks" => new \OpenXPort\DataAccess\NextcloudAddressbookDataAccess($this->davBackend),
             "Calendars" => null,
@@ -48,7 +51,7 @@ class JmapController extends ApiController
             "Cards" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend)
         );
 
-        $this->adapters = array(
+        $adapters = array(
             "Contacts" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter(),
             "AddressBooks" => new \OpenXPort\Adapter\NextcloudAddressbookAdapter(),
             "Calendars" => null,
@@ -62,7 +65,7 @@ class JmapController extends ApiController
             "Cards" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter()
         );
 
-        $this->mappers = array(
+        $mappers = array(
             "Contacts" => new \OpenXPort\Mapper\VCardMapper(),
             "AddressBooks" => new \OpenXPort\Mapper\NextcloudAddressbookMapper(),
             "Calendars" => null,
@@ -75,10 +78,25 @@ class JmapController extends ApiController
             "ContactGroups" => null,
             "Cards" => new \OpenXPort\Mapper\JSContactVCardMapper()
         );
+
+        $accountData = [
+            'accountId' => $this->userSession->getUser()->getUID(),
+            'username' => $_SERVER['PHP_AUTH_USER'],
+            'accountCapabilities' => []
+        ];
+        $session = \OpenXPort\Util\NextcloudSessionUtil::createSession($accountData);
+
+        $server = new \OpenXPort\Jmap\Core\Server($accessors, $adapters, $mappers, $this->oxpConfig, $session);
+        $server->handleJmapRequest($this->jmapRequest);
     }
 
-    public function __construct($appName, IRequest $request, CardDavBackend $davBackend, $userId)
-    {
+    public function __construct(
+        $appName,
+        IRequest $request,
+        IUserSession $userSession,
+        CardDavBackend $davBackend,
+        $userId
+    ) {
         parent::__construct($appName, $request);
         $this->userId = $userId;
 
@@ -99,6 +117,7 @@ class JmapController extends ApiController
             }
         };
 
+        $this->userSession = $userSession;
         $this->davBackend = $davBackend;
     }
 
@@ -115,9 +134,6 @@ class JmapController extends ApiController
     public function session()
     {
         $this->init();
-
-        $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
-        $server->handleJmapRequest($this->jmapRequest);
 
         // Currently we return an empty DataDisplayResponse here.
         // That's because we use echo for appending the JSON to the output.
@@ -146,9 +162,6 @@ class JmapController extends ApiController
         $this->jmapRequest = new \OpenXPort\Jmap\Core\Request($requestInput);
 
         $this->init();
-
-        $server = new \OpenXPort\Jmap\Core\Server($this->accessors, $this->adapters, $this->mappers, $this->oxpConfig);
-        $server->handleJmapRequest($this->jmapRequest);
 
         // Currently we return an empty DataDisplayResponse here.
         // That's because we use echo for appending the JSON to the output.

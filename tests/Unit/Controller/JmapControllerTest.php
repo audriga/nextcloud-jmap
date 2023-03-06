@@ -5,16 +5,29 @@ namespace OCA\JMAP\Tests\Unit\Controller;
 use PHPUnit\Framework\TestCase;
 use Sabre\CardDAV\Plugin;
 use OCP\AppFramework\Http\DataDisplayResponse;
+use OCP\IUser;
+use OCP\IUserSession;
 use OCA\JMAP\Controller\JmapController;
 
 class JmapControllerTest extends TestCase
 {
     private $controller;
     private $userId = 'john';
+    private $userSession;
 
     private function init(): void
     {
         $request = $this->getMockBuilder('OCP\IRequest')->getMock();
+
+        $this->userSession = $this->createMock(IUserSession::class);
+        $user = $this->createMock(IUser::class);
+        $user->expects($this->any())
+             ->method('getUID')
+             ->willReturn('john');
+        $this->userSession
+             ->method('getUser')
+             ->willReturn($user);
+
         $davBackend = $this->getMockBuilder('OCA\DAV\CardDAV\CardDavBackend')->disableOriginalConstructor()->getMock();
         $davBackend->method('createCard')->willReturn('bla');
         $davBackend->method('createCard')->willReturn('bla');
@@ -35,6 +48,7 @@ class JmapControllerTest extends TestCase
         $this->controller = new JmapController(
             'jmap',
             $request,
+            $this->userSession,
             $davBackend,
             $this->userId
         );
@@ -193,5 +207,32 @@ class JmapControllerTest extends TestCase
         $this->assertIsArray($out_json["methodResponses"]);
         $this->assertIsArray($out_json["methodResponses"][0]);
         $this->assertEquals("AddressBook/set", $out_json["methodResponses"][0][0]);
+    }
+
+    /* Greatly inspired from
+     * https://github.com/nextcloud/impersonate/blob/master/tests/unit/Controller/SettingsControllerTest.php
+     */
+    public function testImpersonation(): void
+    {
+        $_SERVER['PHP_AUTH_USER'] = "adminUser*john";
+        $_SERVER['REQUEST_METHOD'] = "GET";
+
+        $this->init();
+
+        $adminUser = $this->createMock(IUser::class);
+        $adminUser->expects($this->any())
+                    ->method('getUID')
+                    ->willReturn('admin');
+        $this->userSession
+             ->method('getUser')
+             ->willReturn($adminUser);
+
+        $result = $this->controller->session();
+        $this->assertTrue($result instanceof DataDisplayResponse);
+
+        $output = $this->getActualOutput();
+        $out_json = json_decode($output, true);
+        $this->assertArrayHasKey("username", $out_json);
+        $this->assertEquals("john", $out_json["username"]);
     }
 }
