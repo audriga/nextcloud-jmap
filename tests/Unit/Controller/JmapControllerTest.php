@@ -2,31 +2,60 @@
 
 namespace OCA\JMAP\Tests\Unit\Controller;
 
-use PHPUnit\Framework\TestCase;
-use Sabre\CardDAV\Plugin;
+use OC\Group\Manager;
+use OCA\JMAP\Controller\JmapController;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\IUser;
+use OCP\IUserManager;
 use OCP\IUserSession;
-use OCA\JMAP\Controller\JmapController;
+use PHPUnit\Framework\TestCase;
+use Sabre\CardDAV\Plugin;
 
 class JmapControllerTest extends TestCase
 {
     private $controller;
     private $userId = 'john';
+    private $user;
     private $userSession;
+    private $userManager;
+    private $groupManager;
+
+    private function initNormalAuth(): void
+    {
+        $this->user = $this->createMock(IUser::class);
+        $this->userSession = $this->createMock(IUserSession::class);
+        $this->userSession
+             ->method('getUser')
+             ->willReturn($this->user);
+        $this->groupManager = $this->createMock(Manager::class);
+    }
+
+    private function initAdminAuth(): void
+    {
+        $this->user = $this->createMock(IUser::class);
+        $this->userSession = $this->createMock(IUserSession::class);
+        $adminUser = $this->createMock(IUser::class);
+        $adminUser->expects($this->any())
+                  ->method('getUID')
+                  ->willReturn('adminUser');
+        $this->userSession
+             ->method('getUser')
+             ->willReturn($adminUser);
+        $this->groupManager = $this->createMock(Manager::class);
+        $this->groupManager->expects($this->once())
+                           ->method('getUserGroupIds')
+                           ->with($adminUser)
+                           ->willReturn(['admin']);
+    }
 
     private function init(): void
     {
         $request = $this->getMockBuilder('OCP\IRequest')->getMock();
 
-        $this->userSession = $this->createMock(IUserSession::class);
-        $user = $this->createMock(IUser::class);
-        $user->expects($this->any())
+        $this->user->expects($this->any())
              ->method('getUID')
              ->willReturn('john');
-        $this->userSession
-             ->method('getUser')
-             ->willReturn($user);
+        $this->userManager = $this->createMock(IUserManager::class);
 
         $davBackend = $this->getMockBuilder('OCA\DAV\CardDAV\CardDavBackend')->disableOriginalConstructor()->getMock();
         $davBackend->method('createCard')->willReturn('bla');
@@ -48,6 +77,8 @@ class JmapControllerTest extends TestCase
         $this->controller = new JmapController(
             'jmap',
             $request,
+            $this->userManager,
+            $this->groupManager,
             $this->userSession,
             $davBackend,
             $this->userId
@@ -69,6 +100,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "GET";
 
+        $this->initNormalAuth();
         $this->init();
 
         $result = $this->controller->session();
@@ -79,6 +111,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
+        $this->initNormalAuth();
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
@@ -101,6 +134,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
+        $this->initNormalAuth();
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
@@ -120,6 +154,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
+        $this->initNormalAuth();
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
@@ -139,6 +174,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
+        $this->initNormalAuth();
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
@@ -161,6 +197,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
+        $this->initNormalAuth();
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
@@ -187,6 +224,7 @@ class JmapControllerTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
 
+        $this->initNormalAuth();
         $this->init();
 
         $using = array("https://www.audriga.eu/jmap/jscontact/");
@@ -217,22 +255,29 @@ class JmapControllerTest extends TestCase
         $_SERVER['PHP_AUTH_USER'] = "adminUser*john";
         $_SERVER['REQUEST_METHOD'] = "GET";
 
+        $this->initAdminAuth();
         $this->init();
 
-        $adminUser = $this->createMock(IUser::class);
-        $adminUser->expects($this->any())
-                    ->method('getUID')
-                    ->willReturn('admin');
-        $this->userSession
-             ->method('getUser')
-             ->willReturn($adminUser);
+        $this->userManager->expects($this->once())
+                          ->method('get')
+                          ->with('john')
+                          ->willReturn($this->user);
+        $this->groupManager->expects($this->once())
+                           ->method('isAdmin')
+                           ->with('adminUser')
+                           ->willReturn(true);
+        // Expect that the user is changed to "john"
+        $this->userSession->expects($this->once())
+                          ->method('setUser')
+                          ->with($this->user);
 
         $result = $this->controller->session();
         $this->assertTrue($result instanceof DataDisplayResponse);
 
         $output = $this->getActualOutput();
         $out_json = json_decode($output, true);
+        $this->assertStringContainsString("capabilities", $output);
         $this->assertArrayHasKey("username", $out_json);
-        $this->assertEquals("john", $out_json["username"]);
+        $this->assertNotEquals($_SERVER['PHP_AUTH_USER'], $out_json["username"]);
     }
 }

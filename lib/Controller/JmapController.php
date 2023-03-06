@@ -4,8 +4,11 @@ namespace OCA\JMAP\Controller;
 
 use OCP\IRequest;
 use OCP\AppFramework\ApiController;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDisplayResponse;
+use OCP\IGroupManager;
 use OCP\IUserSession;
+use OCP\IUserManager;
 use OCA\JMAP\JMAP\CalendarEvent\CalendarEvent;
 use OCA\JMAP\JMAP\Adapter\JmapCalendarEventAdapter;
 use OCA\DAV\CardDAV\CardDavBackend;
@@ -19,13 +22,15 @@ class JmapController extends ApiController
 
     private $oxpConfig;
 
-    private $mappers;
+    private $logger;
 
     private $jmapRequest;
-
     /** @var IUserSession */
     private $userSession;
-
+    /** @var IUserManager */
+    private $userManager;
+    /** @var IGroupManager|Manager */
+    private $groupManager;
     /** @var CardDavBackend */
     private $davBackend;
 
@@ -33,9 +38,17 @@ class JmapController extends ApiController
     {
         // Initialize logging
         \OpenXPort\Util\Logger::init($this->oxpConfig, $this->jmapRequest);
-        $logger = \OpenXPort\Util\Logger::getInstance();
+        $this->logger = \OpenXPort\Util\Logger::getInstance();
 
-        $logger->notice("Running PHP v" . phpversion() . ", TODO v NEXTCLOUD, Plugin v" . $this->OXP_VERSION);
+        $this->logger->notice("Running PHP v" . phpversion() . ", TODO v NEXTCLOUD, Plugin v" . $this->OXP_VERSION);
+
+        // If we are dealing with admin auth credentials, user first part as the admin username for login
+        if (mb_strpos($_SERVER['PHP_AUTH_USER'], "*")) {
+            $error = $this->impersonate(explode("*", $_SERVER['PHP_AUTH_USER'])[1]);
+            if (!empty($error)) {
+                return new DataDisplayResponse($error[0], $error[1]);
+            }
+        }
 
         $accessors = array(
             "Contacts" => new \OpenXPort\DataAccess\NextcloudContactDataAccess($this->davBackend),
@@ -81,18 +94,27 @@ class JmapController extends ApiController
 
         $accountData = [
             'accountId' => $this->userSession->getUser()->getUID(),
-            'username' => $_SERVER['PHP_AUTH_USER'],
+            'username' => $this->userSession->getUser()->getUID(),
             'accountCapabilities' => []
         ];
         $session = \OpenXPort\Util\NextcloudSessionUtil::createSession($accountData);
 
         $server = new \OpenXPort\Jmap\Core\Server($accessors, $adapters, $mappers, $this->oxpConfig, $session);
         $server->handleJmapRequest($this->jmapRequest);
+
+        // Currently we return an empty DataDisplayResponse here.
+        // That's because we use echo for appending the JSON to the output.
+        // The result of this function gets appended right next to the JMAP response,
+        // delivered by '$server->listen();'
+        // DataDisplayResponse is one of the few that prints nothing when there is no output.
+        return new DataDisplayResponse();
     }
 
     public function __construct(
         $appName,
         IRequest $request,
+        IUserManager $userManager,
+        IGroupManager $groupManager,
         IUserSession $userSession,
         CardDavBackend $davBackend,
         $userId
@@ -118,7 +140,66 @@ class JmapController extends ApiController
         };
 
         $this->userSession = $userSession;
+        $this->userManager = $userManager;
+        $this->groupManager = $groupManager;
         $this->davBackend = $davBackend;
+    }
+
+    /**
+     * Heavily inspired from
+     * https://github.com/nextcloud/impersonate/blob/master/lib/Controller/SettingsController.php#L73
+     *
+     * @UseSession
+     * @NoAdminRequired
+     */
+    private function impersonate($userId)
+    {
+        /** @var IUser $impersonator */
+        $impersonator = $this->userSession->getUser();
+
+        $this->logger->notice(sprintf('User %s trying to impersonate user %s', $impersonator->getUID(), $userId));
+
+        $impersonatee = $this->userManager->get($userId);
+        if ($impersonatee === null) {
+            return ['User not found', Http::STATUS_NOT_FOUND];
+        }
+
+        if (
+            !$this->groupManager->isAdmin($impersonator->getUID())
+            && !$this->groupManager->getSubAdmin()->isUserAccessible($impersonator, $impersonatee)
+        ) {
+            return ['Insufficient permissions to impersonate user', Http::STATUS_FORBIDDEN];
+        }
+
+        $authorized = $this->oxpConfig["adminGroups"];
+        if (empty($authorized)) {
+            return ['No groups configured for admin auth.', Http::STATUS_FORBIDDEN];
+        } else {
+            $userGroups = $this->groupManager->getUserGroupIds($impersonator);
+
+            if (!array_intersect($userGroups, $authorized)) {
+                return ['Insufficient permissions to impersonate user', Http::STATUS_FORBIDDEN];
+            }
+        }
+
+        if ($impersonatee->getLastLogin() === 0) {
+            return ['Cannot impersonate the user because it was never logged in', Http::STATUS_FORBIDDEN];
+        }
+
+        if ($impersonatee->getUID() === $impersonator->getUID()) {
+            return ['Cannot impersonate yourself', Http::STATUS_FORBIDDEN];
+        }
+
+        $this->logger->notice(sprintf('Changing to user %s', $userId));
+
+        // Not needed?
+        //if ($this->session->get('oldUserId') === null) {
+        //    $this->session->set('oldUserId', $impersonator->getUID());
+        //}
+
+        $this->userSession->setUser($impersonatee);
+
+        return [];
     }
 
     /**
@@ -133,14 +214,7 @@ class JmapController extends ApiController
      */
     public function session()
     {
-        $this->init();
-
-        // Currently we return an empty DataDisplayResponse here.
-        // That's because we use echo for appending the JSON to the output.
-        // The result of this function gets appended right next to the JMAP response,
-        // delivered by '$server->listen();'
-        // DataDisplayResponse is one of the few that prints nothing when there is no output.
-        return new DataDisplayResponse();
+        return $this->init();
     }
 
     /**
@@ -161,13 +235,6 @@ class JmapController extends ApiController
 
         $this->jmapRequest = new \OpenXPort\Jmap\Core\Request($requestInput);
 
-        $this->init();
-
-        // Currently we return an empty DataDisplayResponse here.
-        // That's because we use echo for appending the JSON to the output.
-        // The result of this function gets appended right next to the JMAP response,
-        // delivered by '$server->listen();'
-        // DataDisplayResponse is one of the few that prints nothing when there is no output.
-        return new DataDisplayResponse();
+        return $this->init();
     }
 }
