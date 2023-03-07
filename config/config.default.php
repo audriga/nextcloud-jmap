@@ -12,6 +12,12 @@ return array(
     /// General configuration
     // ********************** //
 
+    // Admin groups for admin auth / impersonation.
+    //   These groups will be able to impersonate users they are allowed to administrate.
+    //   In case you want admin auth, you probably want to change this to at least:
+    //     'adminGroups' => array('admin'),
+    'adminGroups' => array(''),
+
     // Enabled capabilities for this endpoint
     'capabilities' => array('jscontact', 'debug', 'calendars'),
 

@@ -176,6 +176,7 @@ ifeq (, $(nextcloud_test_directory))
 	@echo "Tests must be run inside Nextcloud. You must specify NEXTCLOUD_TEST_DIR."
 else
 	rm -rf $(nextcloud_test_directory)/vendor
+	cp tests/test_config.php config/config.php
 	find . -maxdepth 1 -type f,d -not -regex ".\|./.git.*" -exec cp -r '{}' '$(nextcloud_test_directory)/' ';'
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
@@ -184,6 +185,10 @@ endif
 # Build a ZIP for deploying
 .PHONY: zip
 zip:
+# In case of project build: use a predefined config
+ifeq (integration,$(project))
+	cp tests/test_config.php config/config.php
+endif
 	php $(build_tools_directory)/composer.phar install --prefer-dist --no-dev
 	php $(build_tools_directory)/composer.phar archive -f zip --dir=build/archives --file=jmap-nextcloud-$(version)
 # In case of project build: rename and put jmap folder to root level
