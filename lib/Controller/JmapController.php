@@ -71,7 +71,7 @@ class JmapController extends ApiController
             "Contacts" => new \OpenXPort\Adapter\NextcloudJSContactVCardAdapter(),
             "AddressBooks" => new \OpenXPort\Adapter\NextcloudAddressbookAdapter(),
             "Calendars" => null,
-            "CalendarEvents" => new \OpenXPort\Adapter\NextcloudCalendarEventAdapter(),
+            "CalendarEvents" => new \OpenXPort\Adapter\JSCalendarICalendarAdapter(),
             "Tasks" => null,
             "Notes" => null,
             "Identities" => null,
@@ -85,7 +85,7 @@ class JmapController extends ApiController
             "Contacts" => new \OpenXPort\Mapper\VCardMapper(),
             "AddressBooks" => new \OpenXPort\Mapper\NextcloudAddressbookMapper(),
             "Calendars" => null,
-            "CalendarEvents" => new \OpenXPort\Mapper\NextcloudCalendarEventMapper(),
+            "CalendarEvents" => new \OpenXPort\Mapper\JSCalendarICalendarMapper(),
             "Tasks" => null,
             "Notes" => null,
             "Identities" => null,
@@ -147,7 +147,7 @@ class JmapController extends ApiController
         $this->userManager = $userManager;
         $this->groupManager = $groupManager;
         $this->cardDavBackend = $cardDavBackend;
-	$this->calDavBackend = $calDavBackend;
+        $this->calDavBackend = $calDavBackend;
     }
 
     /**
