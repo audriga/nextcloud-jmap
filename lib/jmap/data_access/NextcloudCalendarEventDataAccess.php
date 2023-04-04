@@ -9,19 +9,22 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
     private $userId;
     private $backend;
     private $logger;
+    private $principalUri;
 
     public function __construct(CalDavBackend $backend)
     {
         $this->backend = $backend;
 
         $this->logger = \OpenXPort\Util\Logger::getInstance();
+
+        $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
     }
 
     private function getCalendars()
     {
-        $this->userUid = $_SERVER['PHP_AUTH_USER'];
+        $this->userId = $_SERVER['PHP_AUTH_USER'];
 
-        $calendars = $this->backend->getUsersOwnCalendars('principals/users/' . $this->userUid);
+        $calendars = $this->backend->getUsersOwnCalendars('principals/users/' . $this->userId);
 
         $calendarIds = [];
 
@@ -34,7 +37,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 
     public function getAll($accountId = null)
     {
-        $this->logger->info("Getting contacts");
+        $this->logger->info("Getting calendars");
         $calendarIds = $this->getCalendars();
 
         $db = \OC::$server->getDatabaseConnection();
@@ -86,9 +89,31 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
         // TODO: Implement me
     }
 
-    public function create($contactsToCreate, $accountId = null)
+    public function create($eventsToCreate, $accountId = null)
     {
-        // TODO: Implement me
+        $eventMap = [];
+
+        if (is_null($eventsToCreate)) {
+            $this->logger->warning(
+                "Calendar/set did not contain any data for creating for user " . $this->principalUri
+            );
+            return $eventMap;
+        }
+        $this->logger->info("Creating " . count($eventsToCreate) . " calendar events for user " . $this->principalUri);
+
+
+        foreach ($eventsToCreate as $c) {
+            $eventToCreate = reset($c);
+            $creationId = key($c);
+
+            // Create a URI for each event for it to be added to the server.
+            // This may create duplicate URIs
+            $uri = str_replace('.', '-', uniqid("", true)) . ".ics";
+
+            $eventMap[$creationId] = $this->backend->createCalendarObject($creationId, $uri, $eventToCreate);
+        }
+        
+        return $eventMap;
     }
 
     public function destroy($ids, $accountId = null)
