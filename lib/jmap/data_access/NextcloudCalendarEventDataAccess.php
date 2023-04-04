@@ -112,7 +112,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 
             $eventMap[$creationId] = $this->backend->createCalendarObject($creationId, $uri, $eventToCreate);
         }
-        
+
         return $eventMap;
     }
 
