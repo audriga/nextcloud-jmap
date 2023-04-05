@@ -118,7 +118,27 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 
     public function destroy($ids, $accountId = null)
     {
-        // TODO: Implement me
+        $this->logger->info("Destroying " . sizeof($ids) . " events for user " . $this->principalUri);
+        $eventMap = [];
+
+        foreach ($ids as $id) {
+            if (!mb_strpos($id, "#")) {
+                $this->logger->error("Invalid ID. It does not contain '#': " . $id);
+                $eventMap[$id] = 0;
+                continue;
+            }
+            list($calendarId, $uri) = explode("#", $id);
+
+            if (is_null($this->backend->getCalendarObjectById($this->principalUri, $calendarId))) {
+                $eventMap[$id] = 0;
+                $this->logger->error("Event with the following ID does not exist: " . $id);
+            } else {
+                $eventMap[$id] = 1;
+                $this->backend->deleteCalendarObject($calendarId, $uri);
+            }
+        }
+
+        return $eventMap;
     }
 
     public function query($accountId, $filter = null)
