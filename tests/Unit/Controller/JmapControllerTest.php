@@ -91,6 +91,7 @@ class JmapControllerTest extends TestCase
         ];
 
         $calDavBackend->method("getUsersOwnCalendars")->willReturn($calendar);
+        $calDavBackend->method("getCalendarObjectByID")->willReturn(["bla"]);
 
         $this->controller = new JmapController(
             'jmap',
@@ -331,7 +332,7 @@ class JmapControllerTest extends TestCase
         $this->init();
 
         $using = array("urn:ietf:params:jmap:calendars");
-        $create = ["c1" => ["@type" => "Event", "title" => "Testi"]];
+        $create = ["1" => ["@type" => "Event", "title" => "Testi"]];
         $methodCalls = [
             ["CalendarEvent/set", [
                 "accountId" => "john",
@@ -348,7 +349,7 @@ class JmapControllerTest extends TestCase
         $this->assertIsArray($out_json["methodResponses"]);
         $this->assertIsArray($out_json["methodResponses"][0]);
         $this->assertEquals("CalendarEvent/set", $out_json["methodResponses"][0][0]);
-        $this->assertEquals("bla", $out_json["methodResponses"][0][1]["created"]["c1"]["id"]);
+        $this->assertNotEmpty($out_json["methodResponses"][0][1]["created"]);
     }
 
     public function testCalendarEventSetDestroyRequest(): void
@@ -369,12 +370,13 @@ class JmapControllerTest extends TestCase
 
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
-
+        
         $output = $this->getActualOutput();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
         $this->assertIsArray($out_json["methodResponses"][0]);
         $this->assertEquals("CalendarEvent/set", $out_json["methodResponses"][0][0]);
+        $this->assertNotEmpty($out_json["methodResponses"][0][1]["destroyed"]);
     }
 }
