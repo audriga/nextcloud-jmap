@@ -88,9 +88,23 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             $eventToCreate = reset($c);
             $creationId = key($c);
 
+            if (is_null($eventToCreate)) {
+                $eventMap[$creationId] = false;
+                continue;
+            }
+
+            $calendarId = null;
+
+            if (
+                !array_key_exists("oxpProperties", $eventToCreate) ||
+                !array_key_exists("calendarId", $eventToCreate["oxpProperties"]) ||
+                empty($eventToCreate["oxpProperties"]["calendarId"])
+            ) {
+            }
+
             // Create a URI for each event for it to be added to the server.
             // This may create duplicate URIs
-            $uri = str_replace('.', '-', uniqid("", true)) . ".ics";
+            $uri = md5(json_encode($eventToCreate)) . ".ics";
 
             $eventMap[$creationId] = $this->backend->createCalendarObject($creationId, $uri, $eventToCreate);
         }

@@ -332,7 +332,7 @@ class JmapControllerTest extends TestCase
         $this->init();
 
         $using = array("urn:ietf:params:jmap:calendars");
-        $create = ["1" => ["@type" => "Event", "title" => "Testi"]];
+        $create = ["1" => ["@type" => "Event", "title" => "Testi", "calendarId" => "c1"]];
         $methodCalls = [
             ["CalendarEvent/set", [
                 "accountId" => "john",
