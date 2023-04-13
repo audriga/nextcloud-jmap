@@ -80,11 +80,13 @@ class PageController extends Controller
             is_array($using) && !is_null($using) && !empty($using) && in_array("urn:ietf:params:jmap:calendars", $using)
         ) {
             if (
-                is_array($methodCalls) && !is_null($methodCalls) && !empty($methodCalls) && !is_null($methodCalls[0][2])
+                is_array($methodCalls) && !is_null($methodCalls) && !empty($methodCalls) && is_null($methodCalls[0][2])
             ) {
                 if (strcmp($methodCalls[0][0], "CalendarEvent/get") === 0) {
                     $response = $this->getAppointments();
                     return new JSONResponse($response);
+                } elseif (strcmp($methodCalls[0][0], "CalendarEvent/set") === 0) {
+                    // TODO: implement me!
                 } else {
                     $args = array("type" => "unknownMethod");
                     $invocation = array("error", $args, "0");
