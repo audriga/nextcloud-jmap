@@ -26,19 +26,24 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 
         $calendars = $this->backend->getUsersOwnCalendars('principals/users/' . $this->userId);
 
-        $calendarIds = [];
-
-        foreach ($calendars as $i => $calendar) {
-            $calendarIds[$i] = $calendar['id'];
+        if (is_null($calendars) || empty($calendars)) {
+            $this->logger->warning("User has no calendars: " . $this->principalUri);
+            return [];
         }
 
-        return $calendarIds;
+        return $calendars;
     }
 
     public function getAll($accountId = null)
     {
         $this->logger->info("Getting calendars");
-        $calendarIds = $this->getCalendars();
+        $calendars = $this->getCalendars();
+
+        $calendarIds = [];
+
+        foreach($calendars as $i => $calendar) {
+            $calendarIds[$i] = $calendar["id"];
+        }
 
         $db = \OC::$server->getDatabaseConnection();
 
@@ -60,7 +65,12 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             $calendarEventUri = $calendarEvent['uri'];
             $id = "$calendarId#$calendarEventUri";
 
-            $res[$id] = $calendarEvent['calendardata'];
+            $res[$id] = [
+                "iCalendar" => $calendarEvent['calendardata'],
+                "oxpProperties" => [
+                    "calendarId" => $calendarId
+                ]
+            ];
         }
 
         return $res;
@@ -93,6 +103,12 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 continue;
             }
 
+            $calendars = $this->getCalendars();
+
+            if (empty($calendars)) {
+                throw new \Exception("User has no calendars");
+            }
+
             $calendarId = null;
 
             if (
@@ -100,13 +116,33 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 !array_key_exists("calendarId", $eventToCreate["oxpProperties"]) ||
                 empty($eventToCreate["oxpProperties"]["calendarId"])
             ) {
+                $this->logger->warning("No calendarId was given. Using the default calendar instead.");
+                $defaultCalendarId = null;
+
+                foreach ($calendars as $cal) {
+                    if ($cal["uri"] == CalDavBackend::PERSONAL_CALENDAR_URI) {
+                        $defaultCalendarId = $cal["id"];
+                    }
+                }
+
+                if (is_null($defaultCalendarId)) {
+                    $this->logger->warning("No default calendar found. Falling back to the first one in the list.");
+                    $calendarId = $calendars[0]["id"];
+                } else {
+                    $calendarId = $defaultCalendarId;
+                }
+            } else {
+                $calendarId = $eventToCreate["oxpProperties"]["calendarId"];
             }
+
 
             // Create a URI for each event for it to be added to the server.
             // This may create duplicate URIs
-            $uri = md5(json_encode($eventToCreate)) . ".ics";
+            $uri = md5($eventToCreate["iCalendar"]) . ".ics";
 
-            $eventMap[$creationId] = $this->backend->createCalendarObject($creationId, $uri, $eventToCreate);
+            $this->backend->createCalendarObject($calendarId, $uri, $eventToCreate["iCalendar"]);
+
+            $eventMap[$creationId] = "$calendarId#$uri";
         }
 
         return $eventMap;
@@ -125,7 +161,8 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             }
             list($calendarId, $uri) = explode("#", $id);
 
-            if (is_null($this->backend->getCalendarObjectById($this->principalUri, $calendarId))) {
+            // Make sure the event exists.
+            if (is_null($this->backend->getCalendarObject($calendarId, $uri))) {
                 $eventMap[$id] = 0;
                 $this->logger->error("Event with the following ID does not exist: " . $id);
             } else {

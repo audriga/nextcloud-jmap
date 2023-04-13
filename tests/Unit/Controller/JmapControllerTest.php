@@ -91,7 +91,7 @@ class JmapControllerTest extends TestCase
         ];
 
         $calDavBackend->method("getUsersOwnCalendars")->willReturn($calendar);
-        $calDavBackend->method("getCalendarObjectByID")->willReturn(["bla"]);
+        $calDavBackend->method("getCalendarObject")->willReturn(["bla"]);
 
         $this->controller = new JmapController(
             'jmap',
