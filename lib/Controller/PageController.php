@@ -85,6 +85,8 @@ class PageController extends Controller
                 if (strcmp($methodCalls[0][0], "CalendarEvent/get") === 0) {
                     $response = $this->getAppointments();
                     return new JSONResponse($response);
+                } elseif (strcmp($methodCalls[0][0], "CalendarEvent/set") === 0) {
+                    // TODO: implement me!
                 } else {
                     $args = array("type" => "unknownMethod");
                     $invocation = array("error", $args, "0");
