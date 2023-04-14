@@ -159,6 +159,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 $eventMap[$id] = 0;
                 continue;
             }
+
             list($calendarId, $uri) = explode("#", $id);
 
             // Make sure the event exists.
@@ -167,7 +168,10 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 $this->logger->error("Event with the following ID does not exist: " . $id);
             } else {
                 $eventMap[$id] = 1;
-                $this->backend->deleteCalendarObject($calendarId, $uri);
+
+                // Use the default calendar type and permanently delete the event.
+                // see: https://github.com/nextcloud/server/blob/master/apps/dav/lib/CalDAV/CalDavBackend.php#L1417
+                $this->backend->deleteCalendarObject($calendarId, $uri, 0, true);
             }
         }
 
