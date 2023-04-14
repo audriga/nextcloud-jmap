@@ -80,7 +80,7 @@ class PageController extends Controller
             is_array($using) && !is_null($using) && !empty($using) && in_array("urn:ietf:params:jmap:calendars", $using)
         ) {
             if (
-                is_array($methodCalls) && !is_null($methodCalls) && !empty($methodCalls) && is_null($methodCalls[0][2])
+                is_array($methodCalls) && !is_null($methodCalls) && !empty($methodCalls) && !is_null($methodCalls[0][2])
             ) {
                 if (strcmp($methodCalls[0][0], "CalendarEvent/get") === 0) {
                     $response = $this->getAppointments();

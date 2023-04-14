@@ -41,7 +41,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 
         $calendarIds = [];
 
-        foreach($calendars as $i => $calendar) {
+        foreach ($calendars as $i => $calendar) {
             $calendarIds[$i] = $calendar["id"];
         }
 
