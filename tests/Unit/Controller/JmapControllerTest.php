@@ -150,7 +150,6 @@ class JmapControllerTest extends TestCase
         $this->assertEquals("Card/get", $out_json["methodResponses"][0][0]);
     }
 
-    /*
     public function testCardSetCreateRequest(): void
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
@@ -169,7 +168,7 @@ class JmapControllerTest extends TestCase
 
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
-    }*/
+    }
 
     public function testCardSetDestroyRequest(): void
     {
@@ -324,7 +323,7 @@ class JmapControllerTest extends TestCase
         $this->assertIsArray($out_json["methodResponses"][0]);
         $this->assertEquals("CalendarEvent/get", $out_json["methodResponses"][0][0]);
     }
-/*
+
     public function testCalendarEventSetCreateRequest(): void
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
@@ -352,7 +351,7 @@ class JmapControllerTest extends TestCase
         $this->assertEquals("CalendarEvent/set", $out_json["methodResponses"][0][0]);
         $this->assertNotEmpty($out_json["methodResponses"][0][1]["created"]);
     }
-*/
+
     public function testCalendarEventSetDestroyRequest(): void
     {
         $_SERVER['REQUEST_METHOD'] = "POST";
@@ -402,32 +401,59 @@ class JmapControllerTest extends TestCase
         $this->assertIsArray($out_json["methodResponses"]);
         $this->assertIsArray($out_json["methodResponses"][0]);
         $this->assertEquals("Calendar/get", $out_json["methodResponses"][0][0]);
-        }
+    }
 
-        public function testCalendarSetCreateRequest(): void
-        {
-            $_SERVER['REQUEST_METHOD'] = "POST";
-    
-            $this->initNormalAuth();
-            $this->init();
-    
-            $using = array("urn:ietf:params:jmap:calendars");
-            $create = ["asd" => ["name" => "testcalendar"]];
-            $methodCalls = [
-                ["Calendar/set", [
-                    "accountId" => "john",
-                    "create" => $create
-                ], "0"]
-            ];
-    
-            $result = $this->controller->request($using, $methodCalls);
-            $this->assertTrue($result instanceof DataDisplayResponse);
-    
-            $output = $this->getActualOutput();
-            $out_json = json_decode($output, true);
-            $this->assertArrayHasKey("methodResponses", $out_json);
-            $this->assertIsArray($out_json["methodResponses"]);
-            $this->assertIsArray($out_json["methodResponses"][0]);
-            $this->assertEquals("Calendar/set", $out_json["methodResponses"][0][0]);
-        }
+    public function testCalendarSetCreateRequest(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = "POST";
+
+        $this->initNormalAuth();
+        $this->init();
+
+        $using = array("urn:ietf:params:jmap:calendars");
+        $create = ["asd" => ["name" => "testcalendar"]];
+        $methodCalls = [
+            ["Calendar/set", [
+                "accountId" => "john",
+                "create" => $create
+            ], "0"]
+        ];
+
+        $result = $this->controller->request($using, $methodCalls);
+        $this->assertTrue($result instanceof DataDisplayResponse);
+
+        $output = $this->getActualOutput();
+        $out_json = json_decode($output, true);
+        $this->assertArrayHasKey("methodResponses", $out_json);
+        $this->assertIsArray($out_json["methodResponses"]);
+        $this->assertIsArray($out_json["methodResponses"][0]);
+        $this->assertEquals("Calendar/set", $out_json["methodResponses"][0][0]);
+    }
+
+    public function testCalendarSetDestroyRequest(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = "POST";
+
+        $this->initNormalAuth();
+        $this->init();
+
+        $using = array("urn:ietf:params:jmap:calendars");
+        $destroy = ["4"];
+        $methodCalls = [
+            ["Calendar/set", [
+                "accountId" => "john",
+                "destroy" => $destroy
+            ], "0"]
+        ];
+
+        $result = $this->controller->request($using, $methodCalls);
+        $this->assertTrue($result instanceof DataDisplayResponse);
+
+        $output = $this->getActualOutput();
+        $out_json = json_decode($output, true);
+        $this->assertArrayHasKey("methodResponses", $out_json);
+        $this->assertIsArray($out_json["methodResponses"]);
+        $this->assertIsArray($out_json["methodResponses"][0]);
+        $this->assertEquals("Calendar/set", $out_json["methodResponses"][0][0]);
+    }
 }

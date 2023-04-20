@@ -35,14 +35,14 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
     }
 
     /**
-     * Create address books
+     * Create calendars
      *
      * @param array calendarsToCreate Array of Id[calendarToCreate]
      *   Id is the creation ID that we send within a JMAP /set request
      *     for more info, see the "create" argument for JMAP /set requests here: https://jmap.io/spec-core.html#set
      *   calendarToCreate MUST have a 'uri' key (name of calendar) and can have two other keys:
      *   * {DAV:}displayname
-     *   * {urn:ietf:params:xml:ns:carddav}addressbook-description
+     *   * {urn:ietf:params:xml:ns:caldav}calendar-description
      */
     public function create($calendarsToCreate, $accountId = null)
     {
@@ -62,8 +62,8 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
             $calendarToCreate = reset($c);
             $creationId = key($c);
 
-            // In case $calendarToCreate is null or does not contain a name, we shouldn't perform writing, but instead we
-            // should write false as the value for the corresponding $creationId key in $calendarMap
+            // In case $calendarToCreate is null or does not contain a name, we shouldn't perform writing, but instead
+            // we should write false as the value for the corresponding $creationId key in $calendarMap
             if (
                 is_null($calendarToCreate) ||
                 !array_key_exists('uri', $calendarToCreate) ||
@@ -73,7 +73,8 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
             } else {
                 $name = $calendarToCreate['uri'];
                 unset($calendarToCreate['uri']);
-                $calendarMap[$creationId] = $this->backend->createCalendar($this->principalUri, $name, $calendarToCreate);
+                $calendarMap[$creationId] =
+                    $this->backend->createCalendar($this->principalUri, $name, $calendarToCreate);
             }
         }
 
