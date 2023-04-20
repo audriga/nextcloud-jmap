@@ -183,6 +183,8 @@ else
 endif
 
 # Build a ZIP for deploying
+# OPENXPORT_PROJECT
+# Example usage: OPENXPORT_PROJECT=integration make zip
 .PHONY: zip
 zip:
 # In case of project build: use a predefined config

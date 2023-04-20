@@ -45,4 +45,14 @@ class NextcloudCalendarAdapter extends AbstractAdapter
     {
         $this->calendar["description"] = $description;
     }
+
+    public function getColor()
+    {
+        return $this->calendar["color"];
+    }
+
+    public function setColor($color)
+    {
+        $this->calendar["color"] = $color;
+    }
 }
