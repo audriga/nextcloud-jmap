@@ -70,15 +70,54 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
                 strlen($calendarToCreate['uri'] == 0)
             ) {
                 $calendarMap[$creationId] = false;
-            } else {
-                $name = $calendarToCreate['uri'];
-                unset($calendarToCreate['uri']);
-                $calendarMap[$creationId] =
-                    $this->backend->createCalendar($this->principalUri, $name, $calendarToCreate);
+                continue;
             }
+
+            // Use whatever string is stored under 'uri' as the displayname of the calendar. The URI is then created
+            // by removing any invalid characters from the string.
+            $name = $calendarToCreate['uri'];
+            unset($calendarToCreate['uri']);
+
+            if (!isset($calendarToCreate["{DAV:}dsiplayname"])) {
+                $calendarToCreate["{DAV:}displayname"] = $name;
+            }
+
+            $uri = $this->stripInvalidCharactersFromUri($name);
+
+            $calendarMap[$creationId] =
+                $this->backend->createCalendar($this->principalUri, $uri, $calendarToCreate);
         }
 
         return $calendarMap;
+    }
+
+    /**
+     * Remove any characters from the URI that may lead to issues when creating a calendar.
+     *
+     * The list of allowed characters follows the main reccomendtaions found in the JMAP
+     * // core id data type section: https://jmap.io/spec-core.html#the-id-data-type+
+     *
+     * @param string $uri The unfiltered name of the calendar as a string.
+     *
+     * @return string The stripped uri.
+     */
+    private function stripInvalidCharactersFromUri(string $uri)
+    {
+        // Remove leading and trailing whitespaces.
+        $trimmedUri = trim($uri);
+
+        // Remove leading and trailing slashes.
+        $trimmedUri = preg_replace(array("/^\/+/", "/\/+$/"), "", $trimmedUri);
+
+        // First, replace any slash with a hyphen. Two or more slash directly next to one another are replaced with a
+        // single hyphen.
+        // Afterwards, any character that is neither ASCII alpha-numerical (a-zA-Z0-9), a hyphen nor a underscore is
+        // removed.
+        $strippedUri = preg_replace(array("/\/+/", "/[^a-zA-z0-9-_]/"), array("-", ""), $trimmedUri);
+
+        // Should the resulting uri be empty (""), we just return a hyphen. This can happen if the original uri only
+        // contains whitespaces, slashes, non-ASCII characters, etc.
+        return !empty($strippedUri) ? $strippedUri : "-";
     }
 
     public function destroy($ids, $accountId = null)
