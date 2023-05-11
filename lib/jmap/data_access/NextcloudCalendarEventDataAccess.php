@@ -3,6 +3,7 @@
 namespace OpenXPort\DataAccess;
 
 use OCA\DAV\CalDAV\CalDavBackend;
+use OCA\DAV\CalDAV\BirthdayService;
 
 class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 {
@@ -29,6 +30,13 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
         if (is_null($calendars) || empty($calendars)) {
             $this->logger->warning("User has no calendars: " . $this->principalUri);
             return [];
+        }
+
+        // Remove the Birthday Calendar from the list.
+        for ($i = 0; $i < count($calendars); $i++) {
+            if ($calendars[$i]['uri'] === BirthdayService::BIRTHDAY_CALENDAR_URI) {
+                array_splice($calendars, $i, 1);
+            }
         }
 
         return $calendars;
@@ -91,8 +99,8 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             );
             return $eventMap;
         }
-        $this->logger->info("Creating " . count($eventsToCreate) . " calendar events for user " . $this->principalUri);
 
+        $this->logger->info("Creating " . count($eventsToCreate) . " calendar events for user " . $this->principalUri);
 
         foreach ($eventsToCreate as $c) {
             $eventToCreate = reset($c);
@@ -103,10 +111,17 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 continue;
             }
 
+            // Check if the user has any calendar and optionally create a new default one.
+            // By default, the Birthday Calendar is excluded.
+            if ($this->backend->getCalendarsForUserCount($this->principalUri) === 0) {
+                $this->logger->notice("User has no Calendar. Creating new default calendar.");
+                $this->createNewDefaultCalendar();
+            }
+
             $calendars = $this->getCalendars();
 
             if (empty($calendars)) {
-                throw new \Exception("User has no calendars");
+                throw new \Exception("Error: User has no calendars.");
             }
 
             $calendarId = null;
@@ -135,7 +150,6 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 $calendarId = $eventToCreate["oxpProperties"]["calendarId"];
             }
 
-
             // Create a URI for each event for it to be added to the server.
             // This may create duplicate URIs
             $uri = md5($eventToCreate["iCalendar"]) . ".ics";
@@ -146,6 +160,19 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
         }
 
         return $eventMap;
+    }
+
+    private function createNewDefaultCalendar()
+    {
+        try {
+            $this->backend->createCalendar($this->principalUri, CalDavBackend::PERSONAL_CALENDAR_URI, [
+                '{DAV:}displayname' => CalDavBackend::PERSONAL_CALENDAR_NAME,
+                '{http://apple.com/ns/ical/}calendar-color' => "#0082c9",
+                'components' => 'VEVENT'
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
     }
 
     public function destroy($ids, $accountId = null)
