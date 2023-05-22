@@ -12,8 +12,8 @@ class NextcloudCalendarMapper extends AbstractMapper
 
         foreach ($jmapData as $id => $calendar) {
             $adapter->setCalendar([]);
-            $adapter->setName($calendar->name);
-            $adapter->setDescription($calendar->description);
+            $adapter->setName($calendar->getName());
+            $adapter->setDescription($calendar->getDescription());
             // TODO https://web.audriga.com/mantis/view.php?id=6289
             // $adapter->setColor($calendar->color);
 
