@@ -190,6 +190,9 @@ zip:
 # In case of project build: use a predefined config
 ifeq (integration,$(project))
 	cp tests/test_config.php config/config.php
+# We want to exclude a config.php for projects
+else ifneq (, $(project))
+	rm config/config.php || true
 endif
 	php $(build_tools_directory)/composer.phar install --prefer-dist --no-dev
 	php $(build_tools_directory)/composer.phar archive -f zip --dir=build/archives --file=jmap-nextcloud-$(version)
