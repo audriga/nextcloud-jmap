@@ -19,7 +19,7 @@ return array(
     'adminGroups' => array(''),
 
     // Enabled capabilities for this endpoint
-    'capabilities' => array('jscontact', 'debug', 'calendars'),
+    'capabilities' => array('jscontact', 'calendars'),
 
     // ********************** //
     /// Logging configuration
