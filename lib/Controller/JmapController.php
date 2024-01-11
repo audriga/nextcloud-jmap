@@ -17,7 +17,7 @@ use OCA\DAV\CalDAV\CalDavBackend;
 class JmapController extends ApiController
 {
     // Define version
-    private $OXP_VERSION = '1.3.1';
+    private $OXP_VERSION = '1.3.2';
 
     private $userId;
 
