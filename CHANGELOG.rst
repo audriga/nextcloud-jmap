@@ -4,6 +4,28 @@ JMAP iCalendar/vCard Release Notes
 
 .. contents:: Topics
 
+v1.3.2
+======
+
+Release summary
+---------------
+Update dependencies
+
+Details
+-------
+* Update iCalendar/vCard to 0.5.0 and JMAP OpenXPort to 1.7.2 .
+
+v1.3.1
+======
+
+Release summary
+---------------
+Update dependencies
+
+Details
+-------
+* Update iCalendar/vCard to 0.4.0 and JMAP OpenXPort to 1.7.1 .
+
 v1.3.0
 =======
 
