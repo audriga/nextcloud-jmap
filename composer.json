@@ -1,5 +1,5 @@
 {
-    "name": "audriga/jmap-nextcloud",
+    "name": "audriga/nextcloud-jmap",
     "description": "JMAP support for Nextcloud",
     "type": "project",
     "license": "AGPL-3.0-or-later",
