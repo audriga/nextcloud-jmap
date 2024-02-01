@@ -1,4 +1,6 @@
 # Nextcloud JMAP
+⚠️  This version is still in its early stages. This API exposes user data. It is not recommended to expose this API to untrusted networks for now. Please consider contacting us before using this in production.
+
 The JMAP App for Nextcloud provides [JMAP](https://jmap.io/) support for Nextcloud systems by exposing a RESTful API Endpoint which speaks the JMAP Protocol.
 
 Please note that this version is still in its early stages.
@@ -20,6 +22,13 @@ Set up your favorite client to talk to Nextcloud's JMAP API.
 ## Development
 
 For debugging purposes it makes sense to throw some cURL calls at the API. For example, this is how you tell the JMAP API to return all CalendarEvents:
+
 ```
 curl -u username:password <nextcloud-address>/index.php/apps/jmap/jmap -d '{"using":["urn:ietf:params:jmap:calendars"],"methodCalls":[["CalendarEvent/get",{"accountId":"<username>"},"0"]]}'
 ```
+
+#### Tested against
+
+PHP: 8.1 and 8.2
+
+Nextcloud: between 24 and 27
