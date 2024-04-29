@@ -27,6 +27,16 @@
     "autoload": {
         "classmap": ["lib/"]
     },
+    "repositories": {
+        "openxport": {
+            "type": "vcs",
+            "url": "git@github.com:audriga/openxport-jmap.git"
+        },
+        "icalendar": {
+            "type": "vcs",
+            "url": "git@github.com:audriga/jmap-php-icalendar_vcard.git"
+        }
+    },
     "archive": {
         "exclude": ["/tests", "/build", "/README.md"]
     }
