@@ -11,7 +11,7 @@ The following data types are currently supported by the JMAP Plugin for Nextclou
 * Calendars over the JMAP for Calendars protocol, built on top of the [JSCalendar](https://tools.ietf.org/html/draft-ietf-calext-jscalendar-32) format
 
 ## 🏗 Installation
-1. ☁ Clone this app into the `apps` folder of your Nextcloud: `git clone https://github.com/audriga/jmap-nextcloud jmap` (Make sure the folder is named `jmap`). Then `cd jmap` and initialize its submodules via `git submodule update --init --recursive`.
+1. ☁ Clone this app into the `apps` folder of your Nextcloud: `git clone https://github.com/audriga/jmap-nextcloud jmap` (Make sure the folder is named `jmap`).
 2. 👩‍💻 In the folder of the app, run the command `make` to install dependencies and build the Javascript.
 3. ✅ Enable the app through the app management of your Nextcloud
 4. 🎉 Partytime! Help fix [some issues](https://github.com/audriga/jmap-nextcloud/issues) and [send us some pull requests](https://github.com/audriga/jmap-nextcloud/pulls) 👍
@@ -31,4 +31,4 @@ curl -u username:password <nextcloud-address>/index.php/apps/jmap/jmap -d '{"usi
 
 PHP: 8.1 and 8.2
 
-Nextcloud: between 24 and 27
+Nextcloud: between 24 and 29
