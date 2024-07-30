@@ -169,15 +169,21 @@ lint:
 # Requires:
 # * NEXTCLOUD_TEST_DIR - apps/jmap directory of a nextcloud instance. Files will be copied to it.
 # * podman to run tests
+# * https://raw.githubusercontent.com/nextcloud/server/master/tests/bootstrap.php inside the container
+# * Initial Nextcloud installation (i.e. first login on main container)
 # Example usage: NEXTCLOUD_TEST_DIR=~/ops/containers/nextcloud/custom_apps/jmap make test
+# TODOs:
+# * It is likely a good idea to use juliushaertl/nextcloud-docker-dev for this at some point
+# * No longer use sudo
 .PHONY: test
 test: composer
 ifeq (, $(nextcloud_test_directory))
 	@echo "Tests must be run inside Nextcloud. You must specify NEXTCLOUD_TEST_DIR."
 else
-	rm -rf $(nextcloud_test_directory)/vendor
+	podman exec -it nc-eval sh -c "rm -rf custom_apps/jmap && mkdir custom_apps/jmap"
 	cp tests/test_config.php config/config.php
 	find . -maxdepth 1 -type f,d -not -regex ".\|./.git.*" -exec cp -r '{}' '$(nextcloud_test_directory)/' ';'
+	sudo chown -R 100032:100032 $(nextcloud_test_directory)
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.xml"
 	podman exec -it nc-eval sh -c "cd custom_apps/jmap/ && vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml"
 endif
