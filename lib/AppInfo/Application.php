@@ -20,8 +20,6 @@ class Application extends App implements IBootstrap
     public function register(IRegistrationContext $context): void
     {
         // ... registration logic goes here ...
-        // iCal lib
-        require(__DIR__ . '/../../icalendar/zapcallib.php');
         // Register the composer autoloader for packages shipped by this app
         include_once __DIR__ . '/../../vendor/autoload.php';
 
