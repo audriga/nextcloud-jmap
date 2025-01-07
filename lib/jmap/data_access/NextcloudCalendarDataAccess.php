@@ -78,7 +78,7 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
             $name = $calendarToCreate['uri'];
             unset($calendarToCreate['uri']);
 
-            if (!isset($calendarToCreate["{DAV:}dsiplayname"])) {
+            if (!isset($calendarToCreate["{DAV:}displayname"])) {
                 $calendarToCreate["{DAV:}displayname"] = $name;
             }
 
