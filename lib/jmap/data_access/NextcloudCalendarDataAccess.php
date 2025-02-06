@@ -3,6 +3,7 @@
 namespace OpenXPort\DataAccess;
 
 use OCA\DAV\CalDAV\CalDavBackend;
+use OCP\IUserSession;
 
 class NextcloudCalendarDataAccess extends AbstractDataAccess
 {
@@ -10,11 +11,20 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
     private $logger;
     private $principalUri;
 
-    public function __construct(CalDavBackend $backend)
+    public function __construct(CalDavBackend $backend, IUserSession $userSession)
     {
         $this->backend = $backend;
         $this->logger = \OpenXPort\Util\Logger::getInstance();
-        $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
+
+        $user = $userSession->getUser();
+        if ($user !== null) {
+            $this->principalUri = 'principals/users/' . $user->getUID();
+        } else {
+            $this->logger->warning(
+                "Was unable to find user via session. Falling back to PHP Auth User instead."
+            );
+            $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
+        }
     }
 
     public function getAll($accountId = null)

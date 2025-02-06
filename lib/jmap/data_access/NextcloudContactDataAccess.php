@@ -3,6 +3,7 @@
 namespace OpenXPort\DataAccess;
 
 use OCA\DAV\CardDAV\CardDavBackend;
+use OCP\IUserSession;
 
 class NextcloudContactDataAccess extends AbstractDataAccess
 {
@@ -10,16 +11,22 @@ class NextcloudContactDataAccess extends AbstractDataAccess
     private $backend;
     private $logger;
 
-    public function __construct(CardDavBackend $backend)
+    public function __construct(CardDavBackend $backend, IUserSession $userSession)
     {
         $this->backend = $backend;
         $this->logger = \OpenXPort\Util\Logger::getInstance();
 
         // In order to modify the user's contact data, we need the user's UID which luckily is the user's
         // Nextcloud username.
-        // We can take that from the Basic Auth credentials, sent to us within the JMAP request.
-        // The username is thus to be found in '$_SERVER['PHP_AUTH_USER']'.
-        $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
+        $user = $userSession->getUser();
+        if ($user !== null) {
+            $this->principalUri = 'principals/users/' . $user->getUID();
+        } else {
+            $this->logger->warning(
+                "Was unable to find user via session. Falling back to PHP Auth User instead."
+            );
+            $this->principalUri = 'principals/users/' . $_SERVER['PHP_AUTH_USER'];
+        }
     }
 
     private function getAddressBooks()
