@@ -31,9 +31,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
 
     private function getCalendars()
     {
-        $this->userId = $_SERVER['PHP_AUTH_USER'];
-
-        $calendars = $this->backend->getUsersOwnCalendars('principals/users/' . $this->userId);
+        $calendars = $this->backend->getUsersOwnCalendars($this->principalUri);
 
         if (is_null($calendars) || empty($calendars)) {
             $this->logger->warning("User has no calendars: " . $this->principalUri);
