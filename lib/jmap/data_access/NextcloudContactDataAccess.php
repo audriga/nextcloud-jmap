@@ -147,52 +147,71 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             // write false as the value for the corresponding $creationId key in $contactMap
             if (is_null($contactToCreate)) {
                 $contactMap[$creationId] = false;
-            } else {
-                // assume that the first address book is the one we want to create contacts in
-                $addressBooks = $this->getAddressBooks();
-                if (empty($addressBooks)) {
-                    throw new \Exception("User has no address books.");
-                }
-
-                // Write into default address book in case no ID was given
-                $addresBookId = null;
-                if (
-                    !array_key_exists('oxpProperties', $contactToCreate) ||
-                    !array_key_exists('addressBookId', $contactToCreate['oxpProperties']) ||
-                    empty($contactToCreate['oxpProperties']['addressBookId'])
-                ) {
-                    $this->logger->warning("No addressBookId was set. Trying to write into default address book.");
-                    $defaultBookId = null;
-
-                    foreach ($addressBooks as $book) {
-                        if ($book['uri'] == CardDavBackend::PERSONAL_ADDRESSBOOK_URI) {
-                            $defaultBookId = $book['id'];
-                        }
-                    }
-
-                    if (is_null($defaultBookId)) {
-                        $this->logger->warning("No default address book found. Falling back to the first in the list.");
-                        $addressBookId = $addressBooks[0]['id'];
-                    } else {
-                        $addressBookId = $defaultBookId;
-                    }
-                } else {
-                    $addressBookId = $contactToCreate['oxpProperties']['addressBookId'];
-                }
-
-                $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate["vCard"]);
-                // inspiration from https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L143
-                // TODO this might create a URI that already exists. See
-                // https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L234
-                $uri = $contactToCreateD->uid . '.vcf';
-                $this->backend->createCard($addressBookId, $uri, $contactToCreate["vCard"]);
-                // We use the etag cache key as IDs. Inspiration from
-                //  https://github.com/nextcloud/server/blob/master/apps/dav/lib/CardDAV/CardDavBackend.php#L705
-                $contactMap[$creationId] = "$addressBookId#$uri";
+                continue;
             }
+
+            if ($this->backend->getAddressBooksForUserCount($this->principalUri) === 0) {
+                $this->logger->notice("User has no Address Book. Creating new default Address Book.");
+                $this->createNewDefaultBook();
+            }
+
+            // assume that the first address book is the one we want to create contacts in
+            $addressBooks = $this->getAddressBooks();
+
+            if (empty($addressBooks)) {
+                throw new \Exception("User has no address books.");
+            }
+
+            $addressBookId = null;
+
+            // Write into default address book in case no ID was given
+            if (
+                !array_key_exists('oxpProperties', $contactToCreate) ||
+                !array_key_exists('addressBookId', $contactToCreate['oxpProperties']) ||
+                empty($contactToCreate['oxpProperties']['addressBookId'])
+            ) {
+                $this->logger->warning("No addressBookId was set. Trying to write into default address book.");
+                $defaultBookId = null;
+
+                foreach ($addressBooks as $book) {
+                    if ($book['uri'] == CardDavBackend::PERSONAL_ADDRESSBOOK_URI) {
+                        $defaultBookId = $book['id'];
+                    }
+                }
+
+                if (is_null($defaultBookId)) {
+                    $this->logger->warning("No default address book found. Falling back to the first in the list.");
+                    $addressBookId = $addressBooks[0]['id'];
+                } else {
+                    $addressBookId = $defaultBookId;
+                }
+            } else {
+                $addressBookId = $contactToCreate['oxpProperties']['addressBookId'];
+            }
+
+            $contactToCreateD = \Sabre\VObject\Reader::read($contactToCreate["vCard"]);
+            // inspiration from https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L143
+            // TODO this might create a URI that already exists. See
+            // https://github.com/nextcloud/server/blob/132f842f80b63ae0d782c7dbbd721836acbd29cb/apps/dav/lib/CardDAV/AddressBookImpl.php#L234
+            $uri = $contactToCreateD->uid . '.vcf';
+            $this->backend->createCard($addressBookId, $uri, $contactToCreate["vCard"]);
+            // We use the etag cache key as IDs. Inspiration from
+            //  https://github.com/nextcloud/server/blob/master/apps/dav/lib/CardDAV/CardDavBackend.php#L705
+            $contactMap[$creationId] = "$addressBookId#$uri";
         }
 
         return $contactMap;
+    }
+
+    private function createNewDefaultBook()
+    {
+        try {
+            $this->backend->createAddressBook($this->principalUri, CardDavBackend::PERSONAL_ADDRESSBOOK_URI, [
+                '{DAV:}displayname' => CardDavBackend::PERSONAL_ADDRESSBOOK_NAME,
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
     }
 
     public function destroy($ids, $accountId = null)
