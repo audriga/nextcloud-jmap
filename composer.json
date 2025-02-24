@@ -21,7 +21,7 @@
         "sabre/xml": "~2"
     },
     "require-dev": {
-        "christophwurst/nextcloud_testing": "^0.12.4",
+        "christophwurst/nextcloud_testing": "^1.0.0",
         "squizlabs/php_codesniffer": "^3"
     },
     "autoload": {

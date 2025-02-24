@@ -143,7 +143,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -230,7 +230,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -257,7 +257,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -284,7 +284,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -319,7 +319,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->session();
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertStringContainsString("capabilities", $output);
         $this->assertArrayHasKey("username", $out_json);
@@ -341,7 +341,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -368,7 +368,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -396,7 +396,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
         
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -420,7 +420,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -447,7 +447,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
@@ -474,7 +474,7 @@ class JmapControllerTest extends TestCase
         $result = $this->controller->request($using, $methodCalls);
         $this->assertTrue($result instanceof DataDisplayResponse);
 
-        $output = $this->getActualOutput();
+        $output = $this->getActualOutputForAssertion();
         $out_json = json_decode($output, true);
         $this->assertArrayHasKey("methodResponses", $out_json);
         $this->assertIsArray($out_json["methodResponses"]);
