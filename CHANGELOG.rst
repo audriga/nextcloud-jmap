@@ -1,8 +1,23 @@
-==================================
-JMAP iCalendar/vCard Release Notes
-==================================
+============================
+Nextcloud JMAP Release Notes
+============================
 
 .. contents:: Topics
+
+v1.4.0
+======
+
+Release summary
+---------------
+nextcloud-jmap has a new name and supports mail address login now
+
+Details
+-------
+* Change name to nextcloud-jmap
+* Remove some dead code
+* Fix typo in Calendar name key (thanks Lennart S!)
+* Support mail address as login
+* Create default address book and calendar if missing
 
 v1.3.2
 ======
