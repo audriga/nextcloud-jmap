@@ -126,9 +126,49 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
     public function get($ids, $accountId = null)
     {
-        throw new \BadMethodCallException("getting contacts by ID not implemented for Card/get.");
-    }
+        if (empty($ids)) {
+            return [];
+        }
 
+        $this->logger->info("Getting " . sizeof($ids) . " contacts by ID from database");
+        
+        $result = [];
+        
+        foreach ($ids as $id) {
+            try {
+                // ID format: "addressBookId#uri"
+                if (!mb_strpos($id, "#")) {
+                    $this->logger->error("Invalid ID format. It does not contain '#': " . $id);
+                    continue;
+                }
+
+                list($addressBookId, $uri) = explode("#", $id, 2);
+
+                $addressBook = $this->backend->getAddressBookById($addressBookId);
+                if (!$addressBook || $addressBook['principaluri'] !== $this->principalUri) {
+                    $this->logger->error("Access denied to address book: " . $addressBookId);
+                    continue;
+                }
+
+                $card = $this->backend->getCard($addressBookId, $uri);
+                
+                if (!is_null($card) && !empty($card)) {
+                    $result[$id] = [
+                        'vCard' => $card['carddata'],
+                        'uri' => $card['uri'],
+                        'addressBookId' => $addressBookId
+                    ];
+                } else {
+                    $this->logger->warning("Contact not found: " . $id);
+                }
+                
+            } catch (\Exception $e) {
+                $this->logger->error("Failed to get contact " . $id . ": " . $e->getMessage());
+            }
+        }
+        
+        return $result;
+    }
     public function create($contactsToCreate, $accountId = null)
     {
         $this->logger->info("Creating " . sizeof($contactsToCreate) . " contacts for user " . $this->principalUri);
@@ -233,8 +273,286 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         return $contactMap;
     }
 
+    /**
+     * Query contacts with optional filters.
+     * Supported filters: text, email, phone, inAddressBook
+     * Returns the list of ContactCard ids that match the query.
+    */
     public function query($accountId, $filter = null)
     {
-        throw new \BadMethodCallException("Card/query not implemented.");
+        $this->logger->info("Querying contacts");
+
+        if ($filter !== null && is_object($filter)) {
+            $filter = json_decode(json_encode($filter), true);
+        }
+
+        $addressBooks = $this->getAddressBooks();
+        $addressBookIds = [];
+
+        foreach ($addressBooks as $i => $addressBook) {
+            $addressBookIds[$i] = $addressBook['id'];
+        }
+
+        if (isset($filter['inAddressBook']) && !empty($filter['inAddressBook'])) {
+            $addressBookIds = array_intersect($addressBookIds, $filter['inAddressBook']);
+        }
+
+        $db = \OC::$server->getDatabaseConnection();
+        $contactsSql = 'SELECT * FROM `oc_cards` WHERE `addressbookid` IN (?)';
+        $contactsQueryParams = array($addressBookIds);
+        $contactsQueryTypes = array(\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+        $contactsQuery = $db->executeQuery(
+            $contactsSql,
+            $contactsQueryParams,
+            $contactsQueryTypes
+        );
+        $contacts = $contactsQuery->fetchAll();
+
+        $filteredIds = [];
+
+        foreach ($contacts as $contact) {
+            $addressBookId = $contact['addressbookid'];
+            $cardUri = $contact['uri'];
+            $id = "$addressBookId#$cardUri";
+
+            // If no text/email/phone filters, include all contacts from the selected addressbooks
+            if (!isset($filter['text']) && !isset($filter['email']) && !isset($filter['phone'])) {
+                $filteredIds[] = $id;
+                continue;
+            }
+
+            $vCard = \Sabre\VObject\Reader::read($contact['carddata']);
+            $matches = true;
+
+            // Filter: text (searches in FN, EMAIL, TEL fields)
+            if (isset($filter['text'])) {
+                $searchText = strtolower($filter['text']);
+                $matches = false;
+
+                if (isset($vCard->FN) && strpos(strtolower((string)$vCard->FN), $searchText) !== false) {
+                    $matches = true;
+                }
+
+                if (!$matches && isset($vCard->EMAIL)) {
+                    foreach ($vCard->EMAIL as $email) {
+                        if (strpos(strtolower((string)$email), $searchText) !== false) {
+                            $matches = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!$matches && isset($vCard->TEL)) {
+                    foreach ($vCard->TEL as $tel) {
+                        if (strpos(strtolower((string)$tel), $searchText) !== false) {
+                            $matches = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Filter: email
+            if ($matches && isset($filter['email'])) {
+                $searchEmail = strtolower($filter['email']);
+                $matches = false;
+
+                if (isset($vCard->EMAIL)) {
+                    foreach ($vCard->EMAIL as $email) {
+                        if (strpos(strtolower((string)$email), $searchEmail) !== false) {
+                            $matches = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Filter: phone
+            if ($matches && isset($filter['phone'])) {
+                $searchPhone = $filter['phone'];
+                $matches = false;
+
+                if (isset($vCard->TEL)) {
+                    foreach ($vCard->TEL as $tel) {
+                        if (strpos((string)$tel, $searchPhone) !== false) {
+                            $matches = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($matches) {
+                $filteredIds[] = $id;
+            }
+        }
+
+        return [
+            'ids' => $filteredIds,
+            'total' => count($filteredIds),
+            'position' => 0
+        ];
+    }
+
+    /**
+     * Update existing contacts with new vCard data and return success status for each contact ID
+     * Implements JMAP ContactCard/set update operation as per RFC 9553 (JSContact)
+     */
+    public function update($contactsToUpdate, $accountId = null)
+    {
+        if (is_null($contactsToUpdate)) {
+            return [];
+        }
+
+        $this->logger->info("Updating " . count($contactsToUpdate) . " contacts for user " . $this->principalUri);
+        $contactMap = [];
+
+        foreach ($contactsToUpdate as $id => $contactData) {
+            try {
+                // Validate ID format: "addressBookId#uri"
+                if (!mb_strpos($id, "#")) {
+                    $this->logger->error("Invalid ID format. It does not contain '#': " . $id);
+                    $contactMap[$id] = false;
+                    continue;
+                }
+
+                // Split ID into addressBookId and uri
+                list($addressBookId, $uri) = explode("#", $id, 2);
+
+                // Verify contact exists
+                $existingCard = $this->backend->getCard($addressBookId, $uri);
+                if (is_null($existingCard) || empty($existingCard)) {
+                    $this->logger->error("Contact with ID does not exist: " . $id);
+                    $contactMap[$id] = false;
+                    continue;
+                }
+
+                // Verify user has access to address book
+                $addressBook = $this->backend->getAddressBookById($addressBookId);
+                if (!$addressBook || $addressBook['principaluri'] !== $this->principalUri) {
+                    $this->logger->error("Access denied to address book: " . $addressBookId);
+                    $contactMap[$id] = false;
+                    continue;
+                }
+
+                // Validate contact data contains vCard
+                if (is_null($contactData) || !isset($contactData['vCard'])) {
+                    $contactMap[$id] = false;
+                    continue;
+                }
+
+                // Update contact in database
+                $this->backend->updateCard($addressBookId, $uri, $contactData['vCard']);
+                $contactMap[$id] = true;
+                
+            } catch (\Exception $e) {
+                $this->logger->error("Failed to update contact " . $id . ": " . $e->getMessage());
+                $contactMap[$id] = false;
+            }
+        }
+
+        return $contactMap;
+    }
+
+    /**
+     * Get changes since a specific state using Nextcloud's change tracking
+     * Operation codes: 1 = created, 2 = updated, 3 = deleted
+     * @see https://datatracker.ietf.org/doc/html/rfc8620#section-5.2 JMAP Core, /changes
+     */
+    public function getChanges($sinceState, $maxChanges = 1000, $accountId = null)
+    {
+        // Get user's address books
+        $addressBooks = $this->getAddressBooks();
+        
+        if (is_null($addressBooks) || empty($addressBooks)) {
+            return [
+                'newState' => $sinceState,
+                'hasMoreChanges' => false,
+                'created' => [],
+                'updated' => [],
+                'destroyed' => []
+            ];
+        }
+        
+        $addressBookIds = array_column($addressBooks, 'id');
+        
+        // Query changes from oc_addressbookchanges table
+        $db = \OC::$server->getDatabaseConnection();
+        $query = "SELECT uri, synctoken, addressbookid, operation 
+                FROM oc_addressbookchanges 
+                WHERE addressbookid IN (?) 
+                AND synctoken > ? 
+                ORDER BY synctoken ASC 
+                LIMIT ?";
+        
+        $result = $db->executeQuery(
+            $query, 
+            [$addressBookIds, (int)$sinceState, $maxChanges + 1],
+            [\Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            \Doctrine\DBAL\ParameterType::INTEGER,
+            \Doctrine\DBAL\ParameterType::INTEGER]
+        );
+        $rows = $result->fetchAll();
+
+        // Check if more changes exist beyond maxChanges limit
+        $hasMoreChanges = count($rows) > $maxChanges;
+        if ($hasMoreChanges) {
+            array_pop($rows);
+        }
+
+        // Process change records
+        $changes = ['created' => [], 'updated' => [], 'destroyed' => []];
+        $newState = $sinceState;
+
+        foreach ($rows as $row) {
+            if (empty($row['uri'])) continue;
+            
+            $newState = (string)$row['synctoken'];
+            $contactId = $row['addressbookid'] . '#' . $row['uri'];
+            
+            // Map operation code to change type
+            $operationMap = [1 => 'created', 2 => 'updated', 3 => 'destroyed'];
+            if (isset($operationMap[$row['operation']])) {
+                $changes[$operationMap[$row['operation']]][] = $contactId;
+            }
+        }
+
+        return array_merge($changes, [
+            'newState' => $newState,
+            'hasMoreChanges' => $hasMoreChanges
+        ]);
+    }
+
+    /**
+     * Get current state for contacts
+     * Returns the maximum synctoken from contact changes
+     */
+    public function getCurrentState($accountId = null)
+    {
+        try {
+            $addressBooks = $this->getAddressBooks();
+            
+            if (empty($addressBooks)) {
+                return "0";
+            }
+            
+            $addressBookIds = array_column($addressBooks, 'id');
+            $placeholders = implode(',', array_fill(0, count($addressBookIds), '?'));
+            
+            $db = \OC::$server->getDatabaseConnection();
+            $query = "SELECT MAX(synctoken) as current_state 
+                    FROM oc_addressbookchanges 
+                    WHERE addressbookid IN ($placeholders)";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute($addressBookIds);
+            $result = $stmt->fetch();
+            
+            return $result && $result['current_state'] ? (string)$result['current_state'] : "0";
+            
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to get current state: " . $e->getMessage());
+            return "0";
+        }
     }
 }

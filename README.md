@@ -8,7 +8,7 @@ Please note that this version is still in its early stages.
 
 The following data types are currently supported by the JMAP Plugin for Nextcloud:
 
-* Contacts over the JMAP for Contacts protocol ([RFC 9610](https://datatracker.ietf.org/doc/html/rfc9610))
+* Contacts over the JMAP for Contacts protocol ([RFC 9610](https://datatracker.ietf.org/doc/rfc9553/))
 * Calendars over the JMAP for Calendars protocol ([draft-ietf-jmap-calendars-22](https://datatracker.ietf.org/doc/html/draft-ietf-jmap-calendars-22)), built on top of the JSCalendar ([RFC 8984](https://datatracker.ietf.org/doc/html/rfc8984)) format
 
 ## 🏗 Installation

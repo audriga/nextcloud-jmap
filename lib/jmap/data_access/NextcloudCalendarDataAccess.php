@@ -41,7 +41,26 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
 
     public function get($ids, $accountId = null)
     {
-        // TODO: Implement me
+        if (is_null($ids) || empty($ids)) {
+            $this->logger->warning("No IDs provided for get operation");
+            return [];
+        }
+
+        $this->logger->info("Getting " . count($ids) . " calendars for user " . $this->principalUri);
+        
+        $result = [];
+        
+        foreach ($ids as $id) {
+            $calendar = $this->backend->getCalendarById($id);
+            
+            if ($calendar && $calendar['principaluri'] === $this->principalUri) {
+                $result[$id] = $calendar;
+            } else {
+                $this->logger->warning("Calendar not found or access denied: " . $id);
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -156,6 +175,156 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
 
     public function query($accountId, $filter = null)
     {
-        // TODO: Implement me
+        $db = \OC::$server->getDatabaseConnection();
+
+        $calendarsSql = 'SELECT id FROM `oc_calendars` WHERE `principaluri` = ?';
+        $calendarsQueryParams = array($this->principalUri);
+        
+        if (!is_null($filter)) {
+            if (is_object($filter)) {
+                $filter = json_decode(json_encode($filter), true);
+            }
+            
+            if (is_array($filter)) {
+                // Filter by name
+                if (isset($filter['name'])) {
+                    $calendarsSql .= ' AND `displayname` = ?';
+                    array_push($calendarsQueryParams, $filter['name']);
+                }
+                
+                // Filter by URI
+                if (isset($filter['uri'])) {
+                    $calendarsSql .= ' AND `uri` = ?';
+                    array_push($calendarsQueryParams, $filter['uri']);
+                }
+                
+                // Filter by color
+                if (isset($filter['color'])) {
+                    $calendarsSql .= ' AND `calendarcolor` = ?';
+                    array_push($calendarsQueryParams, $filter['color']);
+                }
+            }
+        }
+        
+        $calendarsResult = $db->executeQuery($calendarsSql, $calendarsQueryParams);
+        $calendars = $calendarsResult->fetchAll();
+
+        $ids = array_column($calendars, 'id');
+        
+        return $ids;
+    }
+
+    public function update($calendarsToUpdate, $accountId = null)
+    {
+        if (is_null($calendarsToUpdate)) {
+            return [];
+        }
+
+        $this->logger->info("Updating " . count($calendarsToUpdate) . " calendars");
+        $calendarMap = [];
+
+        // Uses Sabre\DAV\PropPatch to update WebDAV properties following CalDAV standard.
+        // Property names must include XML namespaces as required by RFC 4791 (CalDAV).
+        $propertyMap = [
+            'name' => '{DAV:}displayname',
+            'color' => '{http://apple.com/ns/ical/}calendar-color',
+            'description' => '{urn:ietf:params:xml:ns:caldav}calendar-description',
+            'sortOrder' => '{http://calendarserver.org/ns/}calendar-order',
+            'isVisible' => '{http://owncloud.org/ns}calendar-enabled',
+            'timeZone' => '{urn:ietf:params:xml:ns:caldav}calendar-timezone'
+        ];
+
+        foreach ($calendarsToUpdate as $id => $data) {
+            try {
+                $calendar = $this->backend->getCalendarById($id);
+                
+                if (!$calendar || $calendar['principaluri'] !== $this->principalUri) {
+                    $this->logger->error("Calendar not found or access denied: $id");
+                    $calendarMap[$id] = false;
+                    continue;
+                }
+
+                $mutations = [];
+                
+                foreach ($propertyMap as $jmapKey => $caldavKey) {
+                    if (isset($data[$jmapKey])) {
+                        $value = $data[$jmapKey];
+                        if ($jmapKey === 'isVisible') {
+                            $value = $value ? '1' : '0';
+                        }
+                        $mutations[$caldavKey] = $value;
+                    }
+                }
+
+                if (!empty($mutations)) {
+                    $propPatch = new \Sabre\DAV\PropPatch($mutations);
+                    $this->backend->updateCalendar($id, $propPatch);
+                    $propPatch->commit();
+                    
+                    $propPatchResult = $propPatch->getResult();
+                    $allSucceeded = true;
+                    foreach ($propPatchResult as $prop => $code) {
+                        if ($code !== 200 && $code !== 204) {
+                            $allSucceeded = false;
+                        }
+                    }
+                    
+                    $calendarMap[$id] = $allSucceeded;
+                } else {
+                    $calendarMap[$id] = false;
+                }
+            } catch (\Exception $e) {
+                $this->logger->error("Failed to update calendar $id: " . $e->getMessage());
+                $calendarMap[$id] = false;
+            }
+        }
+
+        return $calendarMap;
+    }
+
+    /**
+     * Get changes for calendars
+     * 
+     * Note: Nextcloud does not track calendar metadata changes in a separate table.
+     * This only detects if the state changed, not which calendars were affected.
+     * Returns empty arrays for created/updated/destroyed.
+     */
+    public function getChanges($sinceState, $maxChanges = 500, $accountId = null)
+    {
+        $currentState = $this->getCurrentState($accountId);
+        
+        return [
+            'newState' => $currentState,
+            'hasMoreChanges' => false,
+            'created' => [],
+            'updated' => [],
+            'destroyed' => []
+        ];
+    }
+
+    /**
+     * Get current state for calendars
+     * Returns the maximum synctoken from user's calendars
+     */
+    public function getCurrentState($accountId = null)
+    {
+        try {
+            $db = \OC::$server->getDatabaseConnection();
+            
+            $query = "SELECT MAX(synctoken) as current_state 
+                    FROM oc_calendars 
+                    WHERE principaluri = ? 
+                    AND uri != ?";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute([$this->principalUri, \OCA\DAV\CalDAV\BirthdayService::BIRTHDAY_CALENDAR_URI]);
+            $result = $stmt->fetch();
+            
+            return $result && $result['current_state'] ? (string)$result['current_state'] : "0";
+            
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to get current state: " . $e->getMessage());
+            return "0";
+        }
     }
 }

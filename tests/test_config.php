@@ -2,5 +2,5 @@
 
 return array(
     'adminGroups' => array('admin'),
-    'capabilities' => array('jscontact', 'debug', 'calendars'),
+    'capabilities' => array('debug', 'calendars', 'contactCard'),
 );

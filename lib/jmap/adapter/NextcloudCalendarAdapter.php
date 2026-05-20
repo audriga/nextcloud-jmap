@@ -28,7 +28,7 @@ class NextcloudCalendarAdapter extends AbstractAdapter
 
     public function getName()
     {
-        return $this->calendar["uri"];
+        return $this->calendar["{DAV:}displayname"] ?? $this->calendar["uri"];
     }
 
     public function setName($name)

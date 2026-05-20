@@ -19,11 +19,11 @@ return array(
     'adminGroups' => array(''),
 
     // Enabled capabilities for this endpoint
-    'capabilities' => array('jscontact', 'calendars'),
+    'capabilities' => array('calendars', 'contactCard'),
 
     // ********************** //
     /// Logging configuration
-    // ********************** //
+    // ********************** //^
     // NOTE: Only a single logger will be used
 
     // Allow FileLogger (also as fallback in case no other is working)

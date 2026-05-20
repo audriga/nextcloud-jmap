@@ -2,7 +2,7 @@
 
 namespace OpenXPort\Mapper;
 
-use OpenXPort\Jmap\Contact\AddressBook;
+use OpenXPort\Jmap\JSContact\AddressBook;
 
 class NextcloudAddressbookMapper extends AbstractMapper
 {
