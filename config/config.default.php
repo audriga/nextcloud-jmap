@@ -23,7 +23,7 @@ return array(
 
     // ********************** //
     /// Logging configuration
-    // ********************** //^
+    // ********************** //
     // NOTE: Only a single logger will be used
 
     // Allow FileLogger (also as fallback in case no other is working)
