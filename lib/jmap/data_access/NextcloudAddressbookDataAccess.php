@@ -41,7 +41,26 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
 
     public function get($ids, $accountId = null)
     {
-        // TODO: Implement me
+        if (is_null($ids) || empty($ids)) {
+            $this->logger->warning("No IDs provided for get operation");
+            return [];
+        }
+
+        $this->logger->info("Getting " . count($ids) . " address books for user " . $this->principalUri);
+        
+        $result = [];
+        
+        foreach ($ids as $id) {
+            $addressbook = $this->backend->getAddressBookById($id);
+            
+            if ($addressbook && $addressbook['principaluri'] === $this->principalUri) {
+                $result[$id] = $addressbook;
+            } else {
+                $this->logger->warning("Address book not found or access denied: " . $id);
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -116,6 +135,143 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
 
     public function query($accountId, $filter = null)
     {
-        // TODO: Implement me
+        $db = \OC::$server->getDatabaseConnection();
+
+        $sql = 'SELECT id FROM `oc_addressbooks` WHERE `principaluri` = ?';
+        $queryParams = array($this->principalUri);
+        
+        if (!is_null($filter)) {
+            if (is_object($filter)) {
+                $filter = json_decode(json_encode($filter), true);
+            }
+            
+            if (is_array($filter)) {
+                // Filter by name (displayname in database)
+                if (isset($filter['name'])) {
+                    $sql .= ' AND `displayname` = ?';
+                    array_push($queryParams, $filter['name']);
+                }
+                
+                // Filter by URI
+                if (isset($filter['uri'])) {
+                    $sql .= ' AND `uri` = ?';
+                    array_push($queryParams, $filter['uri']);
+                }
+            }
+        }
+        
+        $result = $db->executeQuery($sql, $queryParams);
+        $addressbooks = $result->fetchAll();
+
+        $ids = array_column($addressbooks, 'id');
+        
+        return $ids;
+    }
+
+    public function update($addressbooksToUpdate, $accountId = null)
+    {
+        if (is_null($addressbooksToUpdate)) {
+            return [];
+        }
+
+        $this->logger->info("Updating " . count($addressbooksToUpdate) . " address books");
+        $addressbookMap = [];
+        // Map JMAP property names to WebDAV/CardDAV property names with XML namespaces
+        // as defined in RFC 6352 (CardDAV)
+        $propertyMap = [
+            'name' => '{DAV:}displayname',
+            'description' => '{urn:ietf:params:xml:ns:carddav}addressbook-description'
+        ];
+
+        foreach ($addressbooksToUpdate as $id => $data) {
+            try {
+                $addressbook = $this->backend->getAddressBookById($id);
+                
+                if (!$addressbook || $addressbook['principaluri'] !== $this->principalUri) {
+                    $this->logger->error("Address book not found or access denied: $id");
+                    $addressbookMap[$id] = false;
+                    continue;
+                }
+                if (is_object($data)) {
+                    $data = json_decode(json_encode($data), true);
+                }
+
+                $mutations = [];
+                
+                foreach ($propertyMap as $jmapKey => $caldavKey) {
+                    if (isset($data[$jmapKey])) {
+                        $mutations[$caldavKey] = $data[$jmapKey];
+                    }
+                }
+
+                if (!empty($mutations)) {
+                    $propPatch = new \Sabre\DAV\PropPatch($mutations);
+                    $this->backend->updateAddressBook($id, $propPatch);
+                    $propPatch->commit();
+                    
+                    $propPatchResult = $propPatch->getResult();
+                    $allSucceeded = true;
+                    foreach ($propPatchResult as $prop => $code) {
+                        if ($code !== 200 && $code !== 204) {
+                            $allSucceeded = false;
+                        }
+                    }
+                    
+                    $addressbookMap[$id] = $allSucceeded;
+                } else {
+                    $addressbookMap[$id] = false;
+                }
+            } catch (\Exception $e) {
+                $this->logger->error("Failed to update address book $id: " . $e->getMessage());
+                $addressbookMap[$id] = false;
+            }
+        }
+
+        return $addressbookMap;
+    }
+
+    /**
+     * Get changes for address books
+     * 
+     * Note: Nextcloud does not track address book metadata changes in a separate table.
+     * This only detects if the state changed, not which address books were affected.
+     * Returns empty arrays for created/updated/destroyed.
+     */
+    public function getChanges($sinceState, $maxChanges = 500, $accountId = null)
+    {
+        $currentState = $this->getCurrentState($accountId);
+        
+        return [
+            'newState' => $currentState,
+            'hasMoreChanges' => false,
+            'created' => [],
+            'updated' => [],
+            'destroyed' => []
+        ];
+    }
+
+    /**
+     * Get current state for address books
+     * Returns the maximum synctoken from user's address books
+     */
+    public function getCurrentState($accountId = null)
+    {
+        try {
+            $db = \OC::$server->getDatabaseConnection();
+            
+            $query = "SELECT MAX(synctoken) as current_state 
+                    FROM oc_addressbooks 
+                    WHERE principaluri = ?";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute([$this->principalUri]);
+            $result = $stmt->fetch();
+            
+            return $result && $result['current_state'] ? (string)$result['current_state'] : "0";
+            
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to get current state: " . $e->getMessage());
+            return "0";
+        }
     }
 }

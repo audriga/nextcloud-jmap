@@ -33,8 +33,9 @@ class NextcloudAddressbookAdapter extends AbstractAdapter
 
     public function getName()
     {
-        return $this->addressbook['uri'];
+        return $this->addressbook['{DAV:}displayname'] ?? $this->addressbook['uri'];
     }
+
 
     public function setName($name)
     {
