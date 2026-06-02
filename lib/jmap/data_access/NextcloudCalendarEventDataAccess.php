@@ -82,7 +82,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             $res[$id] = [
                 "iCalendar" => $calendarEvent['calendardata'],
                 "oxpProperties" => [
-                    "calendarId" => $calendarId
+                    "calendarId" => (string)$calendarId
                 ]
             ];
         }
@@ -121,7 +121,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                 $res[$id] = [
                     "iCalendar" => $calendarEvent['calendardata'],
                     "oxpProperties" => [
-                        "calendarId" => $calendarId
+                        "calendarId" => (string)$calendarId
                     ]
                 ];
             } else {

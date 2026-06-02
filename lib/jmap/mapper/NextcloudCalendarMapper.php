@@ -31,7 +31,7 @@ class NextcloudCalendarMapper extends AbstractMapper
             $adapter->setCalendar($calendar);
 
             $jmapCalendar = new Calendar();
-            $jmapCalendar->setId($adapter->getId());
+            $jmapCalendar->setId((string)$adapter->getId());
             $jmapCalendar->setName($adapter->getName());
             $jmapCalendar->setDescription($adapter->getDescription());
             // TODO https://web.audriga.com/mantis/view.php?id=6289

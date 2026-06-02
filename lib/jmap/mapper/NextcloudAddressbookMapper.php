@@ -29,7 +29,7 @@ class NextcloudAddressbookMapper extends AbstractMapper
             $adapter->setAddressbook($addressbook);
 
             $jmapAddressbook = new AddressBook();
-            $jmapAddressbook->setId($adapter->getId());
+            $jmapAddressbook->setId((string)$adapter->getId());
             $jmapAddressbook->setName($adapter->getName());
             $jmapAddressbook->setDescription($adapter->getDescription());
 

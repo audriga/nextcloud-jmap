@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8261eabc288e8ee97c60d78587611e8",
+    "content-hash": "980f19118f94967d5f752c9cbda16418",
     "packages": [
         {
             "name": "audriga/jmap-icalendar_vcard",
-            "version": "dev-7676-support_new_ietf",
+            "version": "dev-7676-support-ietf",
             "source": {
                 "type": "git",
                 "url": "https://github.com/audriga/jmap-php-icalendar_vcard.git",
-                "reference": "45ebcc07cf70ab721552240856a4654955a51fe4"
+                "reference": "dad76ec0184f703d9bd2b255d6a25b087a92d4ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/45ebcc07cf70ab721552240856a4654955a51fe4",
-                "reference": "45ebcc07cf70ab721552240856a4654955a51fe4",
+                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/dad76ec0184f703d9bd2b255d6a25b087a92d4ef",
+                "reference": "dad76ec0184f703d9bd2b255d6a25b087a92d4ef",
                 "shasum": ""
             },
             "require": {
-                "audriga/jmap-openxport": "dev-7676-ietf_implementation",
+                "audriga/jmap-openxport": "dev-7676-ietf-compatibility",
                 "php": ">=5.6",
                 "sabre/vobject": ">=4.2"
             },
@@ -67,23 +67,23 @@
                 "jmap"
             ],
             "support": {
-                "source": "https://github.com/audriga/jmap-php-icalendar_vcard/tree/7676-support_new_ietf",
+                "source": "https://github.com/audriga/jmap-php-icalendar_vcard/tree/7676-support-ietf",
                 "issues": "https://github.com/audriga/jmap-php-icalendar_vcard/issues"
             },
-            "time": "2026-05-20T11:05:52+00:00"
+            "time": "2026-06-02T10:32:38+00:00"
         },
         {
             "name": "audriga/jmap-openxport",
-            "version": "dev-7676-ietf_implementation",
+            "version": "dev-7676-ietf-compatibility",
             "source": {
                 "type": "git",
                 "url": "https://github.com/audriga/openxport-jmap.git",
-                "reference": "6bfe2b692cd35d03017c2336fba5e05ecffd0b84"
+                "reference": "ad929cd203bfadea0676ed5808abb0513c415082"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/6bfe2b692cd35d03017c2336fba5e05ecffd0b84",
-                "reference": "6bfe2b692cd35d03017c2336fba5e05ecffd0b84",
+                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/ad929cd203bfadea0676ed5808abb0513c415082",
+                "reference": "ad929cd203bfadea0676ed5808abb0513c415082",
                 "shasum": ""
             },
             "require": {
@@ -127,10 +127,10 @@
                 "migration"
             ],
             "support": {
-                "source": "https://github.com/audriga/openxport-jmap/tree/7676-ietf_implementation",
+                "source": "https://github.com/audriga/openxport-jmap/tree/7676-ietf-compatibility",
                 "issues": "https://github.com/audriga/openxport-jmap/issues"
             },
-            "time": "2026-05-19T13:15:22+00:00"
+            "time": "2026-06-02T10:33:45+00:00"
         },
         {
             "name": "psr/log",

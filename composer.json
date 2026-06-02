@@ -16,8 +16,8 @@
     ],
     "require": {
         "php": ">=5.6.0",
-        "audriga/jmap-openxport": "dev-7676-ietf_implementation",
-        "audriga/jmap-icalendar_vcard": "dev-7676-support_new_ietf",
+        "audriga/jmap-openxport": "dev-7676-ietf-compatibility",
+        "audriga/jmap-icalendar_vcard": "dev-7676-support-ietf",
         "sabre/xml": "~2"
     },
     "require-dev": {

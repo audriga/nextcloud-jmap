@@ -116,7 +116,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             $res[$id] = [
                 "vCard" => $contact['carddata'],
                 "oxpProperties" => [
-                    "addressBookId" => $addressBookId
+                    "addressBookId" => (string)$addressBookId
                 ]
             ];
         }
