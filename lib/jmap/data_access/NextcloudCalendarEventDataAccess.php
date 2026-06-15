@@ -190,7 +190,28 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
                     $calendarId = $defaultCalendarId;
                 }
             } else {
-                $calendarId = $eventToCreate["oxpProperties"]["calendarId"];
+                $rawCalendarId = $eventToCreate["oxpProperties"]["calendarId"];
+
+                // calendarIds from JSCalendar is a map like ["1" => true]; extract the first active key
+                if (is_array($rawCalendarId)) {
+                    $activeIds = array_keys(array_filter($rawCalendarId));
+                    $jmapId = !empty($activeIds) ? $activeIds[0] : null;
+
+                    $calendarId = null;
+                    foreach ($calendars as $cal) {
+                        if ((string) $cal["id"] === (string) $jmapId) {
+                            $calendarId = $cal["id"];
+                            break;
+                        }
+                    }
+
+                    if (is_null($calendarId)) {
+                        $this->logger->warning("Calendar '$jmapId' not found. Falling back to default.");
+                        $calendarId = $calendars[0]["id"];
+                    }
+                } else {
+                    $calendarId = $rawCalendarId;
+                }
             }
 
             // Create a URI for each event for it to be added to the server.
