@@ -96,7 +96,7 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
             if (
                 is_null($calendarToCreate) ||
                 !array_key_exists('uri', $calendarToCreate) ||
-                strlen($calendarToCreate['uri'] == 0)
+                strlen($calendarToCreate['uri']) == 0
             ) {
                 $calendarMap[$creationId] = false;
                 continue;
@@ -113,8 +113,8 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
 
             $uri = $this->stripInvalidCharactersFromUri($name);
 
-            $calendarMap[$creationId] =
-                $this->backend->createCalendar($this->principalUri, $uri, $calendarToCreate);
+            $newId = $this->backend->createCalendar($this->principalUri, $uri, $calendarToCreate);
+            $calendarMap[$creationId] = (string)$newId;
         }
 
         return $calendarMap;

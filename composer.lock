@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8261eabc288e8ee97c60d78587611e8",
+    "content-hash": "452adc0c5932844c720bd630d8484a88",
     "packages": [
         {
             "name": "audriga/jmap-icalendar_vcard",
-            "version": "dev-7676-support_new_ietf",
+            "version": "dev-next-gen",
             "source": {
                 "type": "git",
                 "url": "https://github.com/audriga/jmap-php-icalendar_vcard.git",
-                "reference": "45ebcc07cf70ab721552240856a4654955a51fe4"
+                "reference": "57d770747be365c91d3e756015aeb8768b97ccfd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/45ebcc07cf70ab721552240856a4654955a51fe4",
-                "reference": "45ebcc07cf70ab721552240856a4654955a51fe4",
+                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/57d770747be365c91d3e756015aeb8768b97ccfd",
+                "reference": "57d770747be365c91d3e756015aeb8768b97ccfd",
                 "shasum": ""
             },
             "require": {
-                "audriga/jmap-openxport": "dev-7676-ietf_implementation",
+                "audriga/jmap-openxport": "dev-next-gen",
                 "php": ">=5.6",
                 "sabre/vobject": ">=4.2"
             },
@@ -67,23 +67,23 @@
                 "jmap"
             ],
             "support": {
-                "source": "https://github.com/audriga/jmap-php-icalendar_vcard/tree/7676-support_new_ietf",
+                "source": "https://github.com/audriga/jmap-php-icalendar_vcard/tree/next-gen",
                 "issues": "https://github.com/audriga/jmap-php-icalendar_vcard/issues"
             },
-            "time": "2026-05-20T11:05:52+00:00"
+            "time": "2026-06-11T13:00:14+00:00"
         },
         {
             "name": "audriga/jmap-openxport",
-            "version": "dev-7676-ietf_implementation",
+            "version": "dev-next-gen",
             "source": {
                 "type": "git",
                 "url": "https://github.com/audriga/openxport-jmap.git",
-                "reference": "6bfe2b692cd35d03017c2336fba5e05ecffd0b84"
+                "reference": "ce99f10bb966c73682f986a61696ad0cb753e485"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/6bfe2b692cd35d03017c2336fba5e05ecffd0b84",
-                "reference": "6bfe2b692cd35d03017c2336fba5e05ecffd0b84",
+                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/ce99f10bb966c73682f986a61696ad0cb753e485",
+                "reference": "ce99f10bb966c73682f986a61696ad0cb753e485",
                 "shasum": ""
             },
             "require": {
@@ -127,10 +127,10 @@
                 "migration"
             ],
             "support": {
-                "source": "https://github.com/audriga/openxport-jmap/tree/7676-ietf_implementation",
+                "source": "https://github.com/audriga/openxport-jmap/tree/next-gen",
                 "issues": "https://github.com/audriga/openxport-jmap/issues"
             },
-            "time": "2026-05-19T13:15:22+00:00"
+            "time": "2026-06-11T10:54:16+00:00"
         },
         {
             "name": "psr/log",
@@ -244,16 +244,16 @@
         },
         {
             "name": "sabre/vobject",
-            "version": "4.5.8",
+            "version": "4.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/vobject.git",
-                "reference": "d554eb24d64232922e1eab5896cc2f84b3b9ffb1"
+                "reference": "9432544fc369851fb8202c5d91159b2e669f0c88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/vobject/zipball/d554eb24d64232922e1eab5896cc2f84b3b9ffb1",
-                "reference": "d554eb24d64232922e1eab5896cc2f84b3b9ffb1",
+                "url": "https://api.github.com/repos/sabre-io/vobject/zipball/9432544fc369851fb8202c5d91159b2e669f0c88",
+                "reference": "9432544fc369851fb8202c5d91159b2e669f0c88",
                 "shasum": ""
             },
             "require": {
@@ -344,7 +344,7 @@
                 "issues": "https://github.com/sabre-io/vobject/issues",
                 "source": "https://github.com/fruux/sabre-vobject"
             },
-            "time": "2026-01-12T10:45:19+00:00"
+            "time": "2026-05-31T13:04:55+00:00"
         },
         {
             "name": "sabre/xml",
@@ -2225,16 +2225,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.36.0",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "6a21eb99c6973357967f6ce3708cd55a6bec6315"
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6a21eb99c6973357967f6ce3708cd55a6bec6315",
-                "reference": "6a21eb99c6973357967f6ce3708cd55a6bec6315",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
                 "shasum": ""
             },
             "require": {
@@ -2286,7 +2286,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -2306,24 +2306,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T17:25:58+00:00"
+            "time": "2026-05-27T06:59:30+00:00"
         },
         {
             "name": "symfony/process",
-            "version": "v8.0.8",
+            "version": "v6.4.41",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "cb8939aff03470d1a9d1d1b66d08c6fa71b3bbdc"
+                "reference": "c8fc09bdfe9fde9aaa89b415a4477feaccec16a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/cb8939aff03470d1a9d1d1b66d08c6fa71b3bbdc",
-                "reference": "cb8939aff03470d1a9d1d1b66d08c6fa71b3bbdc",
+                "url": "https://api.github.com/repos/symfony/process/zipball/c8fc09bdfe9fde9aaa89b415a4477feaccec16a7",
+                "reference": "c8fc09bdfe9fde9aaa89b415a4477feaccec16a7",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.4"
+                "php": ">=8.1"
             },
             "type": "library",
             "autoload": {
@@ -2351,7 +2351,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v8.0.8"
+                "source": "https://github.com/symfony/process/tree/v6.4.41"
             },
             "funding": [
                 {
@@ -2371,7 +2371,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-30T15:14:47+00:00"
+            "time": "2026-05-23T13:47:21+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -2427,14 +2427,14 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "audriga/jmap-icalendar_vcard": 20,
-        "audriga/jmap-openxport": 20
+        "audriga/jmap-openxport": 20,
+        "audriga/jmap-icalendar_vcard": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": ">=5.6.0"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
 }
