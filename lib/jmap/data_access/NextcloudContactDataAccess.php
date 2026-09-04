@@ -116,7 +116,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             $res[$id] = [
                 "vCard" => $contact['carddata'],
                 "oxpProperties" => [
-                    "addressBookId" => $addressBookId
+                    "addressBookId" => (string)$addressBookId
                 ]
             ];
         }
@@ -155,8 +155,9 @@ class NextcloudContactDataAccess extends AbstractDataAccess
                 if (!is_null($card) && !empty($card)) {
                     $result[$id] = [
                         'vCard' => $card['carddata'],
-                        'uri' => $card['uri'],
-                        'addressBookId' => $addressBookId
+                        'oxpProperties' => [
+                            'addressBookId' => (string)$addressBookId
+                        ]
                     ];
                 } else {
                     $this->logger->warning("Contact not found: " . $id);
