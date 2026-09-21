@@ -29,12 +29,16 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
 
     public function getAll($accountId = null)
     {
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
-        $addressbooksSql = 'SELECT * FROM `oc_addressbooks` WHERE `principaluri` = ?';
-        $addressbooksQueryParams = array($this->principalUri);
-        $addressbooksResult = $db->executeQuery($addressbooksSql, $addressbooksQueryParams);
+        $qb = $db->getQueryBuilder();
+        $qb->select('*')
+            ->from('addressbooks')
+            ->where($qb->expr()->eq('principaluri', $qb->createNamedParameter($this->principalUri)));
+
+        $addressbooksResult = $qb->executeQuery();
         $addressbooks = $addressbooksResult->fetchAll();
+        $addressbooksResult->closeCursor();
 
         return $addressbooks;
     }
@@ -135,7 +139,7 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
 
     public function query($accountId, $filter = null)
     {
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
         $sql = 'SELECT id FROM `oc_addressbooks` WHERE `principaluri` = ?';
         $queryParams = array($this->principalUri);
@@ -257,7 +261,7 @@ class NextcloudAddressbookDataAccess extends AbstractDataAccess
     public function getCurrentState($accountId = null)
     {
         try {
-            $db = \OC::$server->getDatabaseConnection();
+            $db = \OC::$server->get(\OCP\IDBConnection::class);
             
             $query = "SELECT MAX(synctoken) as current_state 
                     FROM oc_addressbooks 

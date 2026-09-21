@@ -59,7 +59,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         }
 
         // Obtain a database connection in order to be able to query the DB and read contact data from it
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
         // Currently commented out the reading of shared addressbooks for a given user below, since only own
         // addressbooks of a user should be read by default.
@@ -90,18 +90,17 @@ class NextcloudContactDataAccess extends AbstractDataAccess
 
         // Now we read all contacts from the DB table 'oc_cards'. Here we filter in the SQL query by addressbookid
         // and for this we supply all the addressbook IDs from above.
-        $contactsSql = 'SELECT * FROM `oc_cards` WHERE `addressbookid` IN (?)';
-        $contactsQueryParams = array($addressBookIds);
-        // Since we're passing the addressbook IDs as a SQL query parameter here, we need to also specify that they're
-        // an int array. This is needed for the prepared statement and done by supplying $contactsQueryTypes which
-        // information about exactly this type (it comes from the Doctrine library which is used in Nextcloud as ORM).
-        $contactsQueryTypes = array(\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
-        $contactsQuery = $db->executeQuery(
-            $contactsSql,
-            $contactsQueryParams,
-            $contactsQueryTypes
-        );
+        $qb = $db->getQueryBuilder();
+        $qb->select('*')
+            ->from('cards')
+            ->where($qb->expr()->in(
+                'addressbookid',
+                $qb->createNamedParameter($addressBookIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)
+            ));
+
+        $contactsQuery = $qb->executeQuery();
         $contacts = $contactsQuery->fetchAll();
+        $contactsQuery->closeCursor();
 
         // After obtaining all contacts in $contacts, we create an array $res which contains each contact's ID as a key
         // and the respective contact's vCard representation as a value.
@@ -298,7 +297,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             $addressBookIds = array_intersect($addressBookIds, $filter['inAddressBook']);
         }
 
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
         $contactsSql = 'SELECT * FROM `oc_cards` WHERE `addressbookid` IN (?)';
         $contactsQueryParams = array($addressBookIds);
         $contactsQueryTypes = array(\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
@@ -478,7 +477,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
         $addressBookIds = array_column($addressBooks, 'id');
         
         // Query changes from oc_addressbookchanges table
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
         $query = "SELECT uri, synctoken, addressbookid, operation 
                 FROM oc_addressbookchanges 
                 WHERE addressbookid IN (?) 
@@ -540,7 +539,7 @@ class NextcloudContactDataAccess extends AbstractDataAccess
             $addressBookIds = array_column($addressBooks, 'id');
             $placeholders = implode(',', array_fill(0, count($addressBookIds), '?'));
             
-            $db = \OC::$server->getDatabaseConnection();
+            $db = \OC::$server->get(\OCP\IDBConnection::class);
             $query = "SELECT MAX(synctoken) as current_state 
                     FROM oc_addressbookchanges 
                     WHERE addressbookid IN ($placeholders)";

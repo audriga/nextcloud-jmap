@@ -29,12 +29,16 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
 
     public function getAll($accountId = null)
     {
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
-        $calendarsSql = 'SELECT * FROM `oc_calendars` WHERE `principaluri` = ?';
-        $calendarsQueryParams = array($this->principalUri);
-        $calendarsResult = $db->executeQuery($calendarsSql, $calendarsQueryParams);
+        $qb = $db->getQueryBuilder();
+        $qb->select('*')
+            ->from('calendars')
+            ->where($qb->expr()->eq('principaluri', $qb->createNamedParameter($this->principalUri)));
+
+        $calendarsResult = $qb->executeQuery();
         $calendars = $calendarsResult->fetchAll();
+        $calendarsResult->closeCursor();
 
         return $calendars;
     }
@@ -175,7 +179,7 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
 
     public function query($accountId, $filter = null)
     {
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
         $calendarsSql = 'SELECT id FROM `oc_calendars` WHERE `principaluri` = ?';
         $calendarsQueryParams = array($this->principalUri);
@@ -309,7 +313,7 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
     public function getCurrentState($accountId = null)
     {
         try {
-            $db = \OC::$server->getDatabaseConnection();
+            $db = \OC::$server->get(\OCP\IDBConnection::class);
             
             $query = "SELECT MAX(synctoken) as current_state 
                     FROM oc_calendars 

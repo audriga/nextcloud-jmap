@@ -59,19 +59,20 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             $calendarIds[$i] = $calendar["id"];
         }
 
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
+        $qb = $db->getQueryBuilder();
+        $qb->select('*')
+            ->from('calendarobjects')
+            ->where($qb->expr()->in(
+                'calendarid',
+                $qb->createNamedParameter($calendarIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)
+            ))
+            ->andWhere($qb->expr()->eq('componenttype', $qb->createNamedParameter('VEVENT')));
 
-
-        $calendarEventsSql = 'SELECT * FROM `oc_calendarobjects` WHERE `calendarid` IN (?) AND `componenttype` = ?';
-        $calendarEventsQueryParams = array($calendarIds, 'VEVENT');
-        $calendarEventsQueryTypes = array(\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
-        $calendarEventsQuery = $db->executeQuery(
-            $calendarEventsSql,
-            $calendarEventsQueryParams,
-            $calendarEventsQueryTypes
-        );
+        $calendarEventsQuery = $qb->executeQuery();
         $calendarEvents = $calendarEventsQuery->fetchAll();
+        $calendarEventsQuery->closeCursor();
 
         $res = [];
         foreach ($calendarEvents as $calendarEvent) {
@@ -100,7 +101,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
         $this->logger->info("Getting " . count($ids) . " calendar events for user " . $this->principalUri);
         
         $res = [];
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
 
         foreach ($ids as $id) {
             // ID format: "calendarId#uri"
@@ -280,7 +281,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             return [];
         }
         
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
         
         $sql = 'SELECT calendarid, uri FROM `oc_calendarobjects` WHERE `calendarid` IN (?) AND `componenttype` = ?';
         $queryParams = [$calendarIds, 'VEVENT'];
@@ -419,7 +420,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
         $calendarIds = array_column($calendars, 'id');
         
         // Query changes from oc_calendarchanges table
-        $db = \OC::$server->getDatabaseConnection();
+        $db = \OC::$server->get(\OCP\IDBConnection::class);
         $query = "SELECT uri, synctoken, calendarid, operation 
                 FROM oc_calendarchanges 
                 WHERE calendarid IN (?) 
@@ -480,7 +481,7 @@ class NextcloudCalendarEventDataAccess extends AbstractDataAccess
             $calendarIds = array_column($calendars, 'id');
             $placeholders = implode(',', array_fill(0, count($calendarIds), '?'));
             
-            $db = \OC::$server->getDatabaseConnection();
+            $db = \OC::$server->get(\OCP\IDBConnection::class);
             $query = "SELECT MAX(synctoken) as current_state 
                     FROM oc_calendarchanges 
                     WHERE calendarid IN ($placeholders)";
