@@ -77,13 +77,13 @@
             "version": "dev-next-gen",
             "source": {
                 "type": "git",
-                "url": "https://github.com/audriga/openxport-jmap.git",
-                "reference": "ce99f10bb966c73682f986a61696ad0cb753e485"
+                "url": "git@github.com:audriga/openxport-jmap.git",
+                "reference": "88c81d7b784e8d35b458d97da05ff425f88db391"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/ce99f10bb966c73682f986a61696ad0cb753e485",
-                "reference": "ce99f10bb966c73682f986a61696ad0cb753e485",
+                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/88c81d7b784e8d35b458d97da05ff425f88db391",
+                "reference": "88c81d7b784e8d35b458d97da05ff425f88db391",
                 "shasum": ""
             },
             "require": {
@@ -126,11 +126,7 @@
                 "jmap",
                 "migration"
             ],
-            "support": {
-                "source": "https://github.com/audriga/openxport-jmap/tree/next-gen",
-                "issues": "https://github.com/audriga/openxport-jmap/issues"
-            },
-            "time": "2026-06-11T10:54:16+00:00"
+            "time": "2026-09-21T13:17:45+00:00"
         },
         {
             "name": "psr/log",
