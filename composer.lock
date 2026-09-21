@@ -11,13 +11,13 @@
             "version": "dev-next-gen",
             "source": {
                 "type": "git",
-                "url": "https://github.com/audriga/jmap-php-icalendar_vcard.git",
-                "reference": "57d770747be365c91d3e756015aeb8768b97ccfd"
+                "url": "git@github.com:audriga/jmap-php-icalendar_vcard.git",
+                "reference": "006ab63c7f2af09b6bd5e8ce080a70e91bde4fbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/57d770747be365c91d3e756015aeb8768b97ccfd",
-                "reference": "57d770747be365c91d3e756015aeb8768b97ccfd",
+                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/006ab63c7f2af09b6bd5e8ce080a70e91bde4fbf",
+                "reference": "006ab63c7f2af09b6bd5e8ce080a70e91bde4fbf",
                 "shasum": ""
             },
             "require": {
@@ -66,11 +66,7 @@
                 "groupware",
                 "jmap"
             ],
-            "support": {
-                "source": "https://github.com/audriga/jmap-php-icalendar_vcard/tree/next-gen",
-                "issues": "https://github.com/audriga/jmap-php-icalendar_vcard/issues"
-            },
-            "time": "2026-06-11T13:00:14+00:00"
+            "time": "2026-09-21T13:27:24+00:00"
         },
         {
             "name": "audriga/jmap-openxport",
