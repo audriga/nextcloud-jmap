@@ -7,6 +7,7 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCA\JMAP\Middleware\ErrorResponseMiddleware;
+use OCA\JMAP\Middleware\BasicAuthMiddleware;
 
 class Application extends App implements IBootstrap
 {
@@ -23,6 +24,7 @@ class Application extends App implements IBootstrap
         // Register the composer autoloader for packages shipped by this app
         include_once __DIR__ . '/../../vendor/autoload.php';
 
+        $context->registerMiddleware(BasicAuthMiddleware::class);
         $context->registerMiddleware(ErrorResponseMiddleware::class);
     }
 
