@@ -14,8 +14,7 @@ class NextcloudCalendarMapper extends AbstractMapper
             $adapter->setCalendar([]);
             $adapter->setName($calendar->getName());
             $adapter->setDescription($calendar->getDescription());
-            // TODO https://web.audriga.com/mantis/view.php?id=6289
-            // $adapter->setColor($calendar->color);
+            $adapter->setColor($calendar->getColor());
 
             array_push($map, array($id => $adapter->getCalendarAsProperties()));
         }
@@ -34,8 +33,7 @@ class NextcloudCalendarMapper extends AbstractMapper
             $jmapCalendar->setId((string)$adapter->getId());
             $jmapCalendar->setName($adapter->getName());
             $jmapCalendar->setDescription($adapter->getDescription());
-            // TODO https://web.audriga.com/mantis/view.php?id=6289
-            // $jmapCalendar->setColor($adapter->getColor());
+            $jmapCalendar->setColor($adapter->getColor());
 
             array_push($list, $jmapCalendar);
         }

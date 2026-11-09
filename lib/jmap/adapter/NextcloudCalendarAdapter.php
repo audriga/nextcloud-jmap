@@ -13,6 +13,7 @@ class NextcloudCalendarAdapter extends AbstractAdapter
         return array_filter([
             "uri" => $this->calendar["uri"],
             "{" . CalDAVPlugin::NS_CALDAV . "}calendar-description" => $this->calendar["description"] ?? null,
+            "{http://apple.com/ns/ical/}calendar-color" => $this->calendar["{http://apple.com/ns/ical/}calendar-color"] ?? null,
         ]);
     }
 
@@ -48,11 +49,11 @@ class NextcloudCalendarAdapter extends AbstractAdapter
 
     public function getColor()
     {
-        return $this->calendar["color"];
+        return $this->calendar["{http://apple.com/ns/ical/}calendar-color"] ?? null;
     }
 
     public function setColor($color)
     {
-        $this->calendar["color"] = $color;
+        $this->calendar["{http://apple.com/ns/ical/}calendar-color"] = $color;
     }
 }
