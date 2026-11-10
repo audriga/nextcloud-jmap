@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd31783e15aae9606c972142f33a247c",
+    "content-hash": "452adc0c5932844c720bd630d8484a88",
     "packages": [
         {
             "name": "audriga/jmap-icalendar_vcard",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:audriga/jmap-php-icalendar_vcard.git",
-                "reference": "ebf1c1e384d4bcfd2ac04ec5ee7edbacac50bafd"
+                "reference": "4fcbe4948abf8e0052b449adde200810be23cb77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/ebf1c1e384d4bcfd2ac04ec5ee7edbacac50bafd",
-                "reference": "ebf1c1e384d4bcfd2ac04ec5ee7edbacac50bafd",
+                "url": "https://api.github.com/repos/audriga/jmap-php-icalendar_vcard/zipball/4fcbe4948abf8e0052b449adde200810be23cb77",
+                "reference": "4fcbe4948abf8e0052b449adde200810be23cb77",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "groupware",
                 "jmap"
             ],
-            "time": "2026-09-30T09:54:45+00:00"
+            "time": "2026-11-09T17:24:50+00:00"
         },
         {
             "name": "audriga/jmap-openxport",
@@ -74,12 +74,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:audriga/openxport-jmap.git",
-                "reference": "86acc2fd58d8550be0be1ee4ad8ce3a688e24b84"
+                "reference": "e68152091e538ae9a502a4c750ff199e87bd2769"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/86acc2fd58d8550be0be1ee4ad8ce3a688e24b84",
-                "reference": "86acc2fd58d8550be0be1ee4ad8ce3a688e24b84",
+                "url": "https://api.github.com/repos/audriga/openxport-jmap/zipball/e68152091e538ae9a502a4c750ff199e87bd2769",
+                "reference": "e68152091e538ae9a502a4c750ff199e87bd2769",
                 "shasum": ""
             },
             "require": {
@@ -122,7 +122,7 @@
                 "jmap",
                 "migration"
             ],
-            "time": "2026-09-29T13:00:05+00:00"
+            "time": "2026-10-16T18:44:48+00:00"
         },
         {
             "name": "psr/log",
@@ -2425,7 +2425,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.0"
+        "php": ">=5.6.0"
     },
     "platform-dev": [],
     "plugin-api-version": "2.2.0"
