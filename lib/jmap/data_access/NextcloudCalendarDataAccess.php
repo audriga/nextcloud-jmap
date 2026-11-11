@@ -233,7 +233,7 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
             'name' => '{DAV:}displayname',
             'color' => '{http://apple.com/ns/ical/}calendar-color',
             'description' => '{urn:ietf:params:xml:ns:caldav}calendar-description',
-            'sortOrder' => '{http://calendarserver.org/ns/}calendar-order',
+            'sortOrder' => '{http://apple.com/ns/ical/}calendar-order',
             'isVisible' => '{http://owncloud.org/ns}calendar-enabled',
             'timeZone' => '{urn:ietf:params:xml:ns:caldav}calendar-timezone'
         ];
@@ -246,6 +246,9 @@ class NextcloudCalendarDataAccess extends AbstractDataAccess
                     $this->logger->error("Calendar not found or access denied: $id");
                     $calendarMap[$id] = false;
                     continue;
+                }
+                if (is_object($data)) {
+                    $data = json_decode(json_encode($data), true);
                 }
 
                 $mutations = [];

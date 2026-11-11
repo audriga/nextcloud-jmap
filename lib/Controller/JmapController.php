@@ -107,12 +107,27 @@ class JmapController extends ApiController
             "Cards" => new \OpenXPort\Mapper\JSContactVCardMapper()
         );
 
+        $accountCapabilityMap = [
+            'calendars' => \OCA\JMAP\JMAP\Capability\NextcloudCalendarsAccountCapability::class,
+            'contactCard' => \OpenXPort\Jmap\JSContact\JSContactAccountCapability::class,
+        ];
+
+        $accountCapabilities = [];
+        foreach ($this->oxpConfig['capabilities'] as $cap) {
+            if (isset($accountCapabilityMap[$cap])) {
+                $accountCapabilities[] = new $accountCapabilityMap[$cap]();
+            }
+        }
+
         $accountData = [
             'accountId' => $this->userSession->getUser()->getUID(),
             'username' => $this->userSession->getUser()->getUID(),
-            'accountCapabilities' => []
+            'accountCapabilities' => $accountCapabilities
         ];
-        $session = \OpenXPort\Util\NextcloudSessionUtil::createSession($accountData);
+        $requestPath = parse_url($this->request->getRequestUri(), PHP_URL_PATH);
+        $baseUrl = $this->request->getServerProtocol() . '://' . $this->request->getServerHost() . dirname($requestPath);
+
+        $session = \OpenXPort\Util\NextcloudSessionUtil::createSession($accountData, $baseUrl);
 
         $server = new \OpenXPort\Jmap\Core\Server($accessors, $adapters, $mappers, $this->oxpConfig, $session);
         $server->handleJmapRequest($this->jmapRequest);

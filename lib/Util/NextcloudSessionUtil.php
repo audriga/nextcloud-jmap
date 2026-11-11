@@ -7,7 +7,7 @@ use OpenXPort\Jmap\Core\Session;
 
 class NextcloudSessionUtil extends SessionUtil
 {
-    public static function createSession($accountData)
+    public static function createSession($accountData, $baseUrl = null)
     {
         if (!isset($accountData) || empty($accountData)) {
             throw new \Exception("Provided account data is empty");
@@ -56,6 +56,18 @@ class NextcloudSessionUtil extends SessionUtil
             return $result;
         }, []);
 
-        return new Session($accounts, $primaryAccounts, $username);
+        if ($baseUrl === null) {
+            $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://';
+            $baseUrl = $protocol . $_SERVER['HTTP_HOST'] . dirname($requestPath);
+        }
+
+        // No upload/download endpoints are implemented yet in this app.
+        // These are placeholder URLs so clients (e.g. Parula) that require
+        // non-empty, well-formed session URLs don't fail during setup.
+        $uploadUrl = $baseUrl . '/upload?accountId={accountId}';
+        $downloadUrl = $baseUrl . '/download?accountId={accountId}&blobId={blobId}&type={type}&name={name}';
+
+        return new Session($accounts, $primaryAccounts, $username, $uploadUrl, $downloadUrl);
     }
 }

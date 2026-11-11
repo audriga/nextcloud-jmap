@@ -56,4 +56,16 @@ class NextcloudCalendarAdapter extends AbstractAdapter
     {
         $this->calendar["{http://apple.com/ns/ical/}calendar-color"] = $color;
     }
+
+    public function getSortOrder()
+    {
+        $sortOrder = $this->calendar["{http://apple.com/ns/ical/}calendar-order"] ?? null;
+        return $sortOrder === null ? null : (int)$sortOrder;
+    }
+
+    public function getIsVisible()
+    {
+        $isVisible = $this->calendar["{http://owncloud.org/ns}calendar-enabled"] ?? null;
+        return $isVisible === null ? null : (bool)$isVisible;
+    }
 }

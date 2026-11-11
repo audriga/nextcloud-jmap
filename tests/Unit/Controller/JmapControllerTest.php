@@ -52,6 +52,9 @@ class JmapControllerTest extends TestCase
     private function init(): void
     {
         $request = $this->getMockBuilder('OCP\IRequest')->getMock();
+        $request->method('getServerProtocol')->willReturn('https');
+        $request->method('getServerHost')->willReturn('speida-meh.io');
+        $request->method('getRequestUri')->willReturn('/index.php/apps/jmap/jmap');
 
         $this->user->expects($this->any())
              ->method('getUID')

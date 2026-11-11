@@ -2,6 +2,7 @@
 
 namespace OpenXPort\Mapper;
 
+use OCA\DAV\CardDAV\CardDavBackend;
 use OpenXPort\Jmap\JSContact\AddressBook;
 
 class NextcloudAddressbookMapper extends AbstractMapper
@@ -32,6 +33,7 @@ class NextcloudAddressbookMapper extends AbstractMapper
             $jmapAddressbook->setId((string)$adapter->getId());
             $jmapAddressbook->setName($adapter->getName());
             $jmapAddressbook->setDescription($adapter->getDescription());
+            $jmapAddressbook->setIsDefault($adapter->getUri() === CardDavBackend::PERSONAL_ADDRESSBOOK_URI);
 
             array_push($list, $jmapAddressbook);
         }

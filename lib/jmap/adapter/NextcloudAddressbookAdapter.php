@@ -51,4 +51,9 @@ class NextcloudAddressbookAdapter extends AbstractAdapter
     {
         $this->addressbook['description'] = $desc;
     }
+
+    public function getUri()
+    {
+        return $this->addressbook['uri'];
+    }
 }

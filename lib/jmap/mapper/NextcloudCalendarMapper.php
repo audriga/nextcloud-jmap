@@ -34,6 +34,8 @@ class NextcloudCalendarMapper extends AbstractMapper
             $jmapCalendar->setName($adapter->getName());
             $jmapCalendar->setDescription($adapter->getDescription());
             $jmapCalendar->setColor($adapter->getColor());
+            $jmapCalendar->setSortOrder($adapter->getSortOrder());
+            $jmapCalendar->setIsVisible($adapter->getIsVisible());
 
             array_push($list, $jmapCalendar);
         }
